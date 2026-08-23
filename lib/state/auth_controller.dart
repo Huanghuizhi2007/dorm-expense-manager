@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'dart:async';
 
@@ -175,25 +176,15 @@ class AuthController extends ChangeNotifier {
         'gif' => 'image/gif',
         _ => 'image/jpeg',
       };
-      final storagePath =
-          'avatars/${current.id}/${DateTime.now().millisecondsSinceEpoch}.$extension';
-
-      await SupabaseService.client.storage.from('avatars').upload(
-            storagePath,
-            file,
-            fileOptions: FileOptions(
-              contentType: contentType,
-              upsert: true,
-              cacheControl: '3600',
-            ),
-          );
-
-      final publicUrl = SupabaseService.client.storage
-          .from('avatars')
-          .getPublicUrl(storagePath);
+      final bytes = await file.readAsBytes();
+      if (bytes.length > 900000) {
+        return '图片过大，请选择较小的图片';
+      }
+      final dataUri =
+          'data:$contentType;base64,${base64Encode(bytes)}';
       await _repository.updateProfile(
         userId: current.id,
-        avatarUrl: publicUrl,
+        avatarUrl: dataUri,
       );
       _profile = await _loadProfile(current.id);
       notifyListeners();
