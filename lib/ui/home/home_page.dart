@@ -7,6 +7,7 @@ import '../../data/models/expense.dart';
 import '../../state/auth_controller.dart';
 import '../../state/dorm_controller.dart';
 import '../expenses/expense_edit_page.dart';
+import 'dorm_detail_page.dart';
 import '../stats/settlement_page.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/expense_tile.dart';
@@ -19,6 +20,16 @@ class HomePage extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => ExpenseEditPage(expense: expense),
+      ),
+    );
+  }
+
+  void _openDormitory(BuildContext context) {
+    final dormitory = context.read<DormController>().currentDormitory;
+    if (dormitory == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => DormDetailPage(dormitory: dormitory),
       ),
     );
   }
@@ -74,6 +85,7 @@ class HomePage extends StatelessWidget {
             inviteCode: dormitory.inviteCode,
             members: dorm.members,
             monthTotal: totalCents / 100,
+            onTap: () => _openDormitory(context),
           ),
         const SizedBox(height: 20),
         Row(
@@ -156,12 +168,14 @@ class _DormitorySummaryCard extends StatelessWidget {
     required this.inviteCode,
     required this.members,
     required this.monthTotal,
+    required this.onTap,
   });
 
   final String dormitoryName;
   final String inviteCode;
   final List<DormMember> members;
   final double monthTotal;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -169,15 +183,17 @@ class _DormitorySummaryCard extends StatelessWidget {
     final cardColor = Theme.of(context).brightness == Brightness.dark
         ? const Color(0xFF1B3A36)
         : colorScheme.primary;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: cardColor,
+    return Material(
+      color: cardColor,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
           Row(
             children: <Widget>[
               const Icon(Icons.home_work_outlined, color: Colors.white, size: 20),
@@ -303,7 +319,9 @@ class _DormitorySummaryCard extends StatelessWidget {
               ),
             ),
           ],
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

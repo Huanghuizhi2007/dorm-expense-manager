@@ -7,6 +7,7 @@ import '../../state/auth_controller.dart';
 import '../../state/dorm_controller.dart';
 import '../../state/theme_controller.dart';
 import '../home/create_dorm_page.dart';
+import '../home/dorm_detail_page.dart';
 import '../home/join_dorm_page.dart';
 import '../widgets/member_avatar.dart';
 
@@ -134,6 +135,19 @@ class ProfilePage extends StatelessWidget {
         );
       }
     }
+  }
+
+  Future<void> _openDormitory(
+    BuildContext context,
+    Dormitory dormitory,
+  ) async {
+    await context.read<DormController>().selectDormitory(dormitory);
+    if (!context.mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => DormDetailPage(dormitory: dormitory),
+      ),
+    );
   }
 
   @override
@@ -278,7 +292,7 @@ class ProfilePage extends StatelessWidget {
                 dormitory: dormitory,
                 isCurrent: dorm.currentDormitory?.id == dormitory.id,
                 canDelete: dormitory.creatorId == currentUserId,
-                onTap: () => dorm.selectDormitory(dormitory),
+                onTap: () => _openDormitory(context, dormitory),
                 onDelete: dormitory.creatorId == currentUserId
                     ? () => _confirmDeleteDormitory(context, dormitory)
                     : null,
