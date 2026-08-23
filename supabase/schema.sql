@@ -310,6 +310,30 @@ end;
 $$;
 
 -- ------------------------------------------------------------
+-- 删除宿舍（仅创建者，security definer 保证级联删除成员、支出、结算）
+-- ------------------------------------------------------------
+create or replace function public.delete_dormitory(p_dormitory_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not exists (
+    select 1
+    from public.dormitories
+    where id = p_dormitory_id
+      and creator_id = auth.uid()
+  ) then
+    raise exception 'NOT_DORMITORY_CREATOR';
+  end if;
+
+  delete from public.dormitories
+  where id = p_dormitory_id;
+end;
+$$;
+
+-- ------------------------------------------------------------
 -- 自动生成某月结算
 -- 结果写入 settlements，同时返回本宿舍每位成员的明细。
 -- ------------------------------------------------------------
@@ -417,8 +441,10 @@ grant select on table public.settlements to authenticated;
 
 revoke all on function public.join_dormitory(text) from anon, public;
 revoke all on function public.generate_monthly_settlements(uuid, text) from anon, public;
+revoke all on function public.delete_dormitory(uuid) from anon, public;
 grant execute on function public.join_dormitory(text) to authenticated;
 grant execute on function public.generate_monthly_settlements(uuid, text) to authenticated;
+grant execute on function public.delete_dormitory(uuid) to authenticated;
 
 revoke all on function public.handle_new_user() from public;
 revoke all on function public.set_updated_at() from public;

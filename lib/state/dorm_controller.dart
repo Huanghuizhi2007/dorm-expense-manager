@@ -241,6 +241,28 @@ class DormController extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteDormitory(String dormitoryId) async {
+    await SupabaseService.client.rpc(
+      'delete_dormitory',
+      params: <String, dynamic>{'p_dormitory_id': dormitoryId},
+    );
+
+    _expenseSubscription?.cancel();
+    _expenseSubscription = null;
+    _dormitories.removeWhere((item) => item.id == dormitoryId);
+
+    if (_currentDormitory?.id == dormitoryId) {
+      if (_dormitories.isNotEmpty) {
+        await _selectDormitory(_dormitories.first);
+      } else {
+        _currentDormitory = null;
+        _members = <DormMember>[];
+        _expenses = <Expense>[];
+      }
+    }
+    notifyListeners();
+  }
+
   Future<void> addExpense(ExpenseInput input) async {
     final dormitory = _currentDormitory;
     if (dormitory == null) return;
@@ -297,6 +319,9 @@ class DormController extends ChangeNotifier {
     if (error is PostgrestException) {
       final message = error.message;
       if (message.contains('INVITE_NOT_FOUND')) return '邀请码不存在，请检查后重试。';
+      if (message.contains('NOT_DORMITORY_CREATOR')) {
+        return '只有宿舍创建者可以删除宿舍。';
+      }
       if (message.contains('duplicate key')) return '你已经加入过该宿舍。';
       return message;
     }
