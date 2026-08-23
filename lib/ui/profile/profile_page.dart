@@ -110,54 +110,6 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmDeleteDormitory(
-    BuildContext context,
-    Dormitory dormitory,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除宿舍？'),
-        content: Text(
-          '将删除“${dormitory.name}”以及它的全部账单、成员关系，此操作无法恢复。',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-
-    try {
-      await context.read<DormController>().deleteDormitory(dormitory.id);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('宿舍已删除')),
-        );
-      }
-    } catch (error) {
-      if (context.mounted) {
-        final message = error.toString();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              message.contains('NOT_DORMITORY_CREATOR')
-                  ? '只有宿舍创建者可以删除宿舍。'
-                  : '删除失败，请确认已运行删除宿舍的数据库更新。',
-            ),
-          ),
-        );
-      }
-    }
-  }
-
   Future<void> _openDormitory(
     BuildContext context,
     Dormitory dormitory,
@@ -179,7 +131,6 @@ class ProfilePage extends StatelessWidget {
     final themeController = context.watch<ThemeController>();
     final profile = auth.profile;
     final email = SupabaseService.client.auth.currentUser?.email ?? '';
-    final currentUserId = profile?.id ?? '';
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
@@ -312,11 +263,7 @@ class ProfilePage extends StatelessWidget {
               child: _DormitoryTile(
                 dormitory: dormitory,
                 isCurrent: dorm.currentDormitory?.id == dormitory.id,
-                canDelete: dormitory.creatorId == currentUserId,
                 onTap: () => _openDormitory(context, dormitory),
-                onDelete: dormitory.creatorId == currentUserId
-                    ? () => _confirmDeleteDormitory(context, dormitory)
-                    : null,
               ),
             ),
         const SizedBox(height: 20),
@@ -337,16 +284,12 @@ class _DormitoryTile extends StatelessWidget {
   const _DormitoryTile({
     required this.dormitory,
     required this.isCurrent,
-    required this.canDelete,
     required this.onTap,
-    this.onDelete,
   });
 
   final Dormitory dormitory;
   final bool isCurrent;
-  final bool canDelete;
   final VoidCallback onTap;
-  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -396,23 +339,6 @@ class _DormitoryTile extends StatelessWidget {
                   color: theme.colorScheme.primary,
                   size: 20,
                 ),
-              if (canDelete && onDelete != null) ...[
-                const SizedBox(width: 4),
-                TextButton.icon(
-                  onPressed: onDelete,
-                  style: TextButton.styleFrom(
-                    foregroundColor: theme.colorScheme.error,
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    minimumSize: const Size(0, 36),
-                  ),
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
-                    size: 18,
-                  ),
-                  label: const Text('删除'),
-                ),
-              ],
             ],
           ),
         ),

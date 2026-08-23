@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/app_constants.dart';
 import '../../data/models/dorm_member.dart';
 import '../../data/models/dormitory.dart';
+import '../../state/auth_controller.dart';
 import '../../state/dorm_controller.dart';
 import '../widgets/member_avatar.dart';
 
@@ -38,10 +39,61 @@ class _DormDetailPageState extends State<DormDetailPage> {
     }
   }
 
+  Future<void> _confirmDeleteDormitory() async {
+    final currentUserId = context.read<AuthController>().profile?.id;
+    if (widget.dormitory.creatorId != currentUserId) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('删除宿舍？'),
+        content: Text(
+          '将删除“${widget.dormitory.name}”以及它的全部账单、成员关系，此操作无法恢复。',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await context.read<DormController>().deleteDormitory(widget.dormitory.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('宿舍已删除')),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (error) {
+      if (mounted) {
+        final message = error.toString();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              message.contains('NOT_DORMITORY_CREATOR')
+                  ? '只有宿舍创建者可以删除宿舍。'
+                  : '删除失败，请确认已运行删除宿舍的数据库更新。',
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final dorm = context.watch<DormController>();
+    final auth = context.watch<AuthController>();
+    final canDelete = auth.profile?.id == widget.dormitory.creatorId;
     final members = dorm.currentDormitory?.id == widget.dormitory.id
         ? dorm.members
         : <DormMember>[];
@@ -188,6 +240,17 @@ class _DormDetailPageState extends State<DormDetailPage> {
                     ),
                   ),
                 ),
+          const SizedBox(height: 20),
+          if (canDelete)
+            OutlinedButton.icon(
+              onPressed: _confirmDeleteDormitory,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: theme.colorScheme.error,
+                side: BorderSide(color: theme.colorScheme.error),
+              ),
+              icon: const Icon(Icons.delete_outline_rounded),
+              label: const Text('删除宿舍'),
+            ),
           ],
         ),
       ),

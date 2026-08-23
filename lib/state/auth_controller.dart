@@ -148,10 +148,13 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
       return null;
     } catch (error) {
-      if (error is AuthException || error is PostgrestException) {
-        return _repository.friendlyError(error);
+      final message = error.toString();
+      if (message.contains('not found') ||
+          message.contains('bucket') ||
+          message.contains('404')) {
+        return '头像存储空间未配置，请先在 Supabase SQL Editor 运行 migration_avatar_storage.sql';
       }
-      return '头像上传失败，请确认已运行头像存储的数据库更新。';
+      return '头像上传失败，请检查网络后重试。';
     }
   }
 
