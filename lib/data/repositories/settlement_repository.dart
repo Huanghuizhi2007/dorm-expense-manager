@@ -30,13 +30,30 @@ class SettlementRepository {
   }) async {
     final rows = await _client
         .from('settlements')
-        .select('*, profiles (username)')
+        .select()
         .eq('dormitory_id', dormitoryId)
         .eq('month', monthKey(month))
         .order('balance', ascending: false);
-    return rows
-        .map((row) => SettlementEntry.fromMap(row))
+    final userIds = rows
+        .map((row) => row['user_id'] as String)
+        .toSet()
         .toList();
+    if (userIds.isEmpty) return <SettlementEntry>[];
+
+    final profileRows = await _client
+        .from('profiles')
+        .select('id, username')
+        .inFilter('id', userIds);
+    final usernames = <String, String>{
+      for (final profile in profileRows)
+        profile['id'] as String: (profile['username'] as String?) ?? '成员',
+    };
+
+    return rows.map((row) {
+      final merged = Map<String, dynamic>.from(row);
+      final username = usernames[row['user_id'] as String];
+      if (username != null) merged['username'] = username;
+      return SettlementEntry.fromMap(merged);
+    }).toList();
   }
 }
-

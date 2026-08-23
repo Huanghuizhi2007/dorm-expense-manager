@@ -146,10 +146,32 @@ class DormController extends ChangeNotifier {
   Future<List<DormMember>> _fetchMembers(String dormitoryId) async {
     final rows = await SupabaseService.client
         .from('members')
-        .select('*, profiles (username, avatar_url)')
+        .select()
         .eq('dormitory_id', dormitoryId)
         .order('joined_at', ascending: true);
-    return rows.map(DormMember.fromMap).toList();
+    final userIds = rows
+        .map((row) => row['user_id'] as String)
+        .toSet()
+        .toList();
+    if (userIds.isEmpty) return <DormMember>[];
+
+    final profileRows = await SupabaseService.client
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .inFilter('id', userIds);
+    final profilesById = <String, Map<String, dynamic>>{
+      for (final profile in profileRows) profile['id'] as String: profile,
+    };
+
+    return rows.map((row) {
+      final merged = Map<String, dynamic>.from(row);
+      final profile = profilesById[row['user_id'] as String];
+      if (profile != null) {
+        merged['username'] = profile['username'];
+        merged['avatar_url'] = profile['avatar_url'];
+      }
+      return DormMember.fromMap(merged);
+    }).toList();
   }
 
   void _startExpenseStream() {

@@ -13,9 +13,7 @@ class ExpenseRepository {
   }) async {
     final rows = await _client
         .from('expenses')
-        .select(
-          '*, payer:payer_id(username, avatar_url), creator:creator_id(username)',
-        )
+        .select()
         .eq('dormitory_id', dormitoryId)
         .order('created_at', ascending: false);
     return _toModels(rows, members);
