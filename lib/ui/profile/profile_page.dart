@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/dormitory.dart';
@@ -87,6 +88,26 @@ class ProfilePage extends StatelessWidget {
         SnackBar(content: Text(error)),
       );
     }
+  }
+
+  Future<void> _pickAvatarFromGallery(BuildContext context) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+    if (!context.mounted) return;
+
+    final error = await context
+        .read<AuthController>()
+        .updateAvatarFromFile(picked.path);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(error == null ? '头像已更新' : error)),
+    );
   }
 
   Future<void> _confirmDeleteDormitory(
@@ -211,9 +232,9 @@ class ProfilePage extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => _editAvatarUrl(context),
+                      onPressed: () => _pickAvatarFromGallery(context),
                       icon: const Icon(Icons.portrait_outlined, size: 18),
-                      label: const Text('改头像'),
+                      label: const Text('相册选头像'),
                     ),
                   ),
                 ],

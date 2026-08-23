@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -141,6 +143,54 @@ class AuthController extends ChangeNotifier {
         userId: current.id,
         username: username,
         avatarUrl: avatarUrl,
+      );
+      _profile = await _loadProfile(current.id);
+      notifyListeners();
+      return null;
+    } catch (error) {
+      if (error is AuthException || error is PostgrestException) {
+        return _repository.friendlyError(error);
+      }
+      return '头像上传失败，请确认已运行头像存储的数据库更新。';
+    }
+  }
+
+  Future<String?> updateAvatarFromFile(String filePath) async {
+    final current = _profile;
+    if (current == null) return '请先登录';
+    try {
+      final file = File(filePath);
+      if (!await file.exists()) return '头像文件不存在，请重新选择';
+
+      final dotIndex = filePath.lastIndexOf('.');
+      final extension = dotIndex >= 0
+          ? filePath.substring(dotIndex + 1).toLowerCase()
+          : 'jpg';
+      final contentType = switch (extension) {
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'gif' => 'image/gif',
+        _ => 'image/jpeg',
+      };
+      final storagePath =
+          'avatars/${current.id}/${DateTime.now().millisecondsSinceEpoch}.$extension';
+
+      await SupabaseService.client.storage.from('avatars').upload(
+            storagePath,
+            file,
+            fileOptions: FileOptions(
+              contentType: contentType,
+              upsert: true,
+              cacheControl: '3600',
+            ),
+          );
+
+      final publicUrl = SupabaseService.client.storage
+          .from('avatars')
+          .getPublicUrl(storagePath);
+      await _repository.updateProfile(
+        userId: current.id,
+        avatarUrl: publicUrl,
       );
       _profile = await _loadProfile(current.id);
       notifyListeners();
