@@ -363,14 +363,19 @@ class _DormitoryTile extends StatelessWidget {
                 ),
               if (canDelete && onDelete != null) ...[
                 const SizedBox(width: 4),
-                IconButton(
+                TextButton.icon(
                   onPressed: onDelete,
-                  tooltip: '删除宿舍',
-                  icon: Icon(
-                    Icons.delete_outline_rounded,
-                    color: theme.colorScheme.error,
-                    size: 20,
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(0, 36),
                   ),
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    size: 18,
+                  ),
+                  label: const Text('删除'),
                 ),
               ],
             ],
