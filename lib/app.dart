@@ -13,7 +13,7 @@ class DormBillApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: <SingleChildWidget>[
+      providers: [
         ChangeNotifierProvider<AuthController>(
           create: (_) => AuthController(),
         ),

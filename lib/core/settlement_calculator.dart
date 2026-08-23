@@ -1,3 +1,5 @@
+import 'app_constants.dart';
+
 import '../data/models/dorm_member.dart';
 import '../data/models/expense.dart';
 

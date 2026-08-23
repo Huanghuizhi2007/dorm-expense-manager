@@ -65,7 +65,7 @@ class AuthController extends ChangeNotifier {
   Future<UserProfile?> _loadProfile(String userId) async {
     try {
       final profile = await _repository.fetchProfile(userId);
-      await CacheService.cacheProfile(profile);
+      await CacheService.cacheProfile(profile!);
       return profile;
     } catch (_) {
       return CacheService.cachedProfile(userId) ??
