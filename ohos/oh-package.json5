@@ -1,0 +1,13 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "dormbill",
+  "version": "1.0.9",
+  "description": "ourbills - 多人共享的宿舍公共支出管理 App",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hypium": "1.0.6"
+  }
+}

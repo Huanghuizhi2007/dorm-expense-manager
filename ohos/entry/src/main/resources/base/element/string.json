@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "ourbills 宿舍公共支出管理"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "ourbills 宿舍公共支出管理"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "ourbills"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 一个接近真实产品的多人共享宿舍公共支出管理 App。宿舍成员共用一个云端数据库，任何成员添加、修改、删除支出后，其他成员会在手机上实时看到；月底自动生成每人应承担金额和谁该给谁多少的结算方案。
 
-技术栈：Flutter（Android 优先）+ Supabase（免费云数据库、账号认证、实时同步、行级权限）。
+技术栈：Flutter（Android 优先，支持 Windows 桌面和 HarmonyOS）+ Supabase（免费云数据库、账号认证、实时同步、行级权限）。
 
 ## 一、功能清单
 
@@ -24,6 +24,9 @@
 ourbills/
 ├─ android/                          # Android 工程
 │  └─ app/src/main/kotlin/...        # MainActivity
+├─ ohos/                             # HarmonyOS 工程（手机 + 2in1 电脑）
+│  ├─ AppScope/                      # 应用级配置
+│  └─ entry/                         # 主模块，已声明网络权限
 ├─ lib/
 │  ├─ main.dart                      # 应用入口
 │  ├─ app.dart                       # Provider + MaterialApp
@@ -54,7 +57,9 @@ ourbills/
 │  └─ schema.sql                     # 完整数据库、RLS 权限、结算函数
 ├─ scripts/
 │  ├─ build_apk.bat                  # Windows 一键打包
-│  └─ build_apk.sh                   # macOS/Linux 一键打包
+│  ├─ build_apk.sh                   # macOS/Linux 一键打包
+│  ├─ build_hap.bat / .ps1 / .sh     # 鸿蒙 HAP 一键打包
+│  └─ ohos/pubspec_overrides.yaml    # 鸿蒙插件适配版本
 ├─ .github/workflows/build-apk.yml   # GitHub 云端自动打包
 └─ pubspec.yaml
 ```
@@ -206,6 +211,44 @@ build/app/outputs/flutter-apk/app-release.apk
 3. 解压后运行 `ourbills.exe` 即可，无需安装安卓模拟器。
 
 Windows 版同样使用 Supabase 云端数据，可以和手机版登录同一账号、共享宿舍账单。
+
+### HarmonyOS 手机 / 鸿蒙电脑（HAP）
+
+鸿蒙手机和鸿蒙电脑不能直接安装 APK 或 Windows EXE，需要单独打包成 `.hap`。本项目已经加入完整的 `ohos/` 鸿蒙工程，并配置了 `phone` 和 `2in1`（平板/电脑）两种设备类型。
+
+打包 HAP 的步骤：
+
+1. 安装 DevEco Studio 5.1+，并安装 Command Line Tools、ohpm、hvigor。
+2. 下载鸿蒙版 Flutter SDK：
+
+```bash
+git clone -b br_3.27.4-ohos-1.0.4 https://gitcode.com/openharmony-tpc/flutter_flutter.git
+```
+
+将 `flutter_flutter/bin` 加入 `PATH`，并配置 `DEVECO_SDK_HOME` 指向 DevEco SDK。
+
+3. 用 DevEco Studio 打开项目根目录下的 `ohos/` 文件夹，在 `File -> Project Structure -> Signing Configs` 中完成自动签名。鸿蒙真机安装必须签名，这一步不能省略。
+4. 设置云数据库参数后运行：
+
+Windows：
+
+```bat
+set SUPABASE_URL=https://你的项目.supabase.co
+set SUPABASE_ANON_KEY=你的anon_key
+scripts\build_hap.bat
+```
+
+macOS / Linux：
+
+```bash
+export SUPABASE_URL=https://你的项目.supabase.co
+export SUPABASE_ANON_KEY=你的anon_key
+./scripts/build_hap.sh
+```
+
+构建完成后把 `entry-default-signed.hap` 发送到鸿蒙手机或鸿蒙电脑，点击安装即可；也可以通过 USB 连接后用 `hdc install` 安装。
+
+说明：鸿蒙应用的签名与华为开发者账号、测试设备绑定，所以目前只能在配置好签名工具的电脑上打包，不能像 APK 一样在公共云端一键生成可安装 HAP。
 
 ## 六、如何发布到手机
 

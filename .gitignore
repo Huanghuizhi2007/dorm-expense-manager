@@ -23,5 +23,23 @@ lib/generated_plugin_registrant.dart
 dormbill-source.zip
 *.log
 *.tmp
+*.zip
+*.hap
+*.app
+dist/
 Thumbs.db
 .DS_Store
+
+# HarmonyOS build output and local config
+ohos/.idea/
+ohos/.hvigor/
+ohos/build/
+ohos/oh_modules/
+ohos/**/oh_modules/
+ohos/local.properties
+ohos/oh-package-lock.json5
+ohos/package-lock.json
+ohos/**/src/main/resources/rawfile/flutter_assets/
+ohos/**/libs/**/libapp.so
+ohos/**/libs/**/libflutter.so
+ohos/entry/GeneratedPluginRegistrant.ets

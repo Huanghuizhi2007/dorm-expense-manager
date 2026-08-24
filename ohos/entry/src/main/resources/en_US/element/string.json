@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "ourbills dorm expense manager"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "ourbills dorm expense manager"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "ourbills"
+    }
+  ]
+}
