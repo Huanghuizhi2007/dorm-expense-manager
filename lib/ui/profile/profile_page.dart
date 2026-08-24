@@ -99,11 +99,15 @@ class ProfilePage extends StatelessWidget {
       imageQuality: 85,
     );
     if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    final fileName = picked.name.isNotEmpty
+        ? picked.name
+        : picked.path.split('/').last;
     if (!context.mounted) return;
 
     final error = await context
         .read<AuthController>()
-        .updateAvatarFromFile(picked.path);
+        .updateAvatarFromBytes(bytes, fileName);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(error == null ? '头像已更新' : error)),

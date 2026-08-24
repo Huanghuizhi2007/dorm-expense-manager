@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'dart:async';
 
@@ -159,16 +159,16 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  Future<String?> updateAvatarFromFile(String filePath) async {
+  Future<String?> updateAvatarFromBytes(
+    Uint8List bytes,
+    String fileName,
+  ) async {
     final current = _profile;
     if (current == null) return '请先登录';
     try {
-      final file = File(filePath);
-      if (!await file.exists()) return '头像文件不存在，请重新选择';
-
-      final dotIndex = filePath.lastIndexOf('.');
+      final dotIndex = fileName.lastIndexOf('.');
       final extension = dotIndex >= 0
-          ? filePath.substring(dotIndex + 1).toLowerCase()
+          ? fileName.substring(dotIndex + 1).toLowerCase()
           : 'jpg';
       final contentType = switch (extension) {
         'png' => 'image/png',
@@ -176,7 +176,6 @@ class AuthController extends ChangeNotifier {
         'gif' => 'image/gif',
         _ => 'image/jpeg',
       };
-      final bytes = await file.readAsBytes();
       if (bytes.length > 900000) {
         return '图片过大，请选择较小的图片';
       }

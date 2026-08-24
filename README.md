@@ -212,6 +212,22 @@ build/app/outputs/flutter-apk/app-release.apk
 
 Windows 版同样使用 Supabase 云端数据，可以和手机版登录同一账号、共享宿舍账单。
 
+### 网页版（鸿蒙电脑最省事）
+
+如果觉得打包 HAP 太麻烦，可以直接用网页版。鸿蒙电脑不需要安装任何应用，也不需要签名，打开浏览器访问网址即可使用，数据和手机版、电脑版完全共享。
+
+项目已经加入网页构建支持，GitHub 仓库中运行 `Build ourbills Web` 工作流后会生成 `ourbills-web` 构建产物。免费托管到 GitHub Pages 需要把仓库设为公开（源码中没有数据库密码和密钥，云端连接参数在构建时传入）。
+
+本地预览网页版：
+
+```bash
+flutter create --platforms=web --org com.dormbill --project-name dormbill .
+flutter pub get
+flutter build web --release --dart-define=SUPABASE_URL=https://你的项目.supabase.co --dart-define=SUPABASE_ANON_KEY=你的anon_key
+```
+
+发布后，手机和鸿蒙电脑的浏览器都可以打开同一个网址。
+
 ### HarmonyOS 手机 / 鸿蒙电脑（HAP）
 
 鸿蒙手机和鸿蒙电脑不能直接安装 APK 或 Windows EXE，需要单独打包成 `.hap`。本项目已经加入完整的 `ohos/` 鸿蒙工程，并配置了 `phone` 和 `2in1`（平板/电脑）两种设备类型。
