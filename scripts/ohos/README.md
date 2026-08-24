@@ -33,3 +33,5 @@ export SUPABASE_ANON_KEY=你的anon_key
 ```
 
 构建脚本会自动启用 `image_picker` 和 `shared_preferences` 的鸿蒙适配版本，结束后自动清理临时覆盖文件。
+
+注意：DevEco Studio 自动签名生成的是调试证书，只能安装到绑定了该证书的测试设备。如果要把 App 发给其他鸿蒙电脑或上架华为应用市场，需要在 AppGallery Connect 申请正式签名。
