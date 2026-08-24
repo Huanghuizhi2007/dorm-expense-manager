@@ -202,6 +202,12 @@ build/app/outputs/flutter-apk/app-release.apk
 
 每次推送到 `main`/`master` 也会自动触发构建。构建参数写入 `.github/workflows/build-apk.yml`，云端自动执行 `flutter create` 补齐平台文件。
 
+### 关于新版 APK 直接覆盖安装
+
+从本版本开始，GitHub 云端打包会使用一个固定的安卓签名密钥（保存在仓库 Secrets 中），因此以后每次发布新版本都可以直接覆盖安装，不需要先卸载。
+
+注意：如果手机里现在安装的是更早版本（使用旧的随机签名），第一次切换到新固定签名时仍需要卸载一次。安装好这次发布的新版之后，以后所有新版本都能直接更新。
+
 ### Windows 桌面版
 
 同一个 GitHub Actions 工作流也会在 Windows runner 上生成桌面版：

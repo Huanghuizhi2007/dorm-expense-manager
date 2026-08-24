@@ -13,6 +13,7 @@ build/
 android/local.properties
 android/.gradle/
 android/app/.cxx/
+android/app/ourbills-release.p12
 ios/Pods/
 ios/.symlinks/
 ios/Flutter/ephemeral/
