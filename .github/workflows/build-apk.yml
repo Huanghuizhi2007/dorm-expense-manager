@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build ourbills APK and Windows
 
 on:
   workflow_dispatch:
@@ -49,3 +49,48 @@ jobs:
         with:
           name: ourbills-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+  build-windows:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate Windows platform files
+        run: flutter create --platforms=windows --org com.dormbill --project-name dormbill .
+
+      - name: Set Windows app title
+        shell: pwsh
+        run: |
+          (Get-Content windows/runner/main.cpp) -replace 'L"dormbill"','L"ourbills"' | Set-Content windows/runner/main.cpp
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows release
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          flutter build windows --release `
+            --dart-define=SUPABASE_URL="$env:SUPABASE_URL" `
+            --dart-define=SUPABASE_ANON_KEY="$env:SUPABASE_ANON_KEY"
+
+      - name: Package Windows app
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath ourbills-windows.zip
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ourbills-windows
+          path: ourbills-windows.zip

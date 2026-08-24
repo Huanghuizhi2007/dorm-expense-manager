@@ -197,6 +197,16 @@ build/app/outputs/flutter-apk/app-release.apk
 
 每次推送到 `main`/`master` 也会自动触发构建。构建参数写入 `.github/workflows/build-apk.yml`，云端自动执行 `flutter create` 补齐平台文件。
 
+### Windows 桌面版
+
+同一个 GitHub Actions 工作流也会在 Windows runner 上生成桌面版：
+
+1. 运行 `Build Android APK` 工作流。
+2. 构建完成后下载 `ourbills-windows` 产物。
+3. 解压后运行 `ourbills.exe` 即可，无需安装安卓模拟器。
+
+Windows 版同样使用 Supabase 云端数据，可以和手机版登录同一账号、共享宿舍账单。
+
 ## 六、如何发布到手机
 
 ### 直接安装
