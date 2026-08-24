@@ -37,7 +37,7 @@ class SetupGuidePage extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           children: <Widget>[
             Text(
-              '宿舍账本需要连接你的云数据库',
+              'ourbills 需要连接你的云数据库',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
@@ -121,4 +121,3 @@ class _StepTile extends StatelessWidget {
     );
   }
 }
-

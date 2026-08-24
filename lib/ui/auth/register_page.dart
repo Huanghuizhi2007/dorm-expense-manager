@@ -79,7 +79,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     Text(
-                      '创建你的宿舍账本账号',
+                      '创建你的 ourbills 账号',
                       style: theme.textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),

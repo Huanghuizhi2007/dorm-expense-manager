@@ -26,7 +26,7 @@ class SplashPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              '宿舍账本',
+              'ourbills',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 6),
@@ -40,4 +40,3 @@ class SplashPage extends StatelessWidget {
     );
   }
 }
-

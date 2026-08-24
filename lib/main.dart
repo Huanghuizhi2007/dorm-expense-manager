@@ -11,7 +11,7 @@ Future<void> main() async {
   if (!AppConfig.isConfigured) {
     runApp(
       MaterialApp(
-        title: '宿舍账本',
+        title: 'ourbills',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),
@@ -24,5 +24,5 @@ Future<void> main() async {
     AppConfig.supabaseUrl,
     AppConfig.supabaseAnonKey,
   );
-  runApp(const DormBillApp());
+  runApp(const OurBillsApp());
 }

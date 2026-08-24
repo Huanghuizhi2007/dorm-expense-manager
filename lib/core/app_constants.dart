@@ -74,6 +74,19 @@ String fullDate(DateTime date) =>
 bool sameMonth(DateTime date, DateTime month) =>
     date.year == month.year && date.month == month.month;
 
+bool sameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+String dateKey(DateTime date) =>
+    '${date.year.toString().padLeft(4, '0')}-'
+    '${date.month.toString().padLeft(2, '0')}-'
+    '${date.day.toString().padLeft(2, '0')}';
+
+String formatPercent(double value) {
+  final text = value.toStringAsFixed(1);
+  return text.endsWith('.0') ? text.substring(0, text.length - 2) : text;
+}
+
 String initials(String name) {
   final trimmed = name.trim();
   if (trimmed.isEmpty) return '?';

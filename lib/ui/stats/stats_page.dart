@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/analytics.dart';
 import '../../core/app_constants.dart';
 import '../../core/settlement_calculator.dart';
 import '../../data/models/dorm_member.dart';
@@ -8,6 +9,7 @@ import '../../data/models/settlement_entry.dart';
 import '../../data/supabase_service.dart';
 import '../../state/dorm_controller.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/category_donut_chart.dart';
 import '../widgets/member_avatar.dart';
 import 'settlement_page.dart';
 
@@ -83,6 +85,10 @@ class _StatsPageState extends State<StatsPage> {
     );
     final currentUserId = SupabaseService.client.auth.currentUser?.id ?? '';
     final myLine = result.lines.where((line) => line.userId == currentUserId);
+    final categorySummaries = buildCategorySummaries(
+      dorm.expenses,
+      _month,
+    );
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
@@ -141,6 +147,10 @@ class _StatsPageState extends State<StatsPage> {
               ),
             ],
           ),
+          const SizedBox(height: 18),
+          Text('消费分类', style: theme.textTheme.titleLarge),
+          const SizedBox(height: 10),
+          _CategoryCard(summaries: categorySummaries),
           const SizedBox(height: 18),
           if (myLine.isNotEmpty)
             _MySettlementCard(
@@ -210,6 +220,79 @@ class _StatsPageState extends State<StatsPage> {
       if (line.paidCents > max) max = line.paidCents;
     }
     return max;
+  }
+}
+
+class _CategoryCard extends StatelessWidget {
+  const _CategoryCard({required this.summaries});
+
+  final List<CategorySummary> summaries;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Column(
+        children: <Widget>[
+          if (summaries.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                '本月还没有分类数据',
+                style: theme.textTheme.bodyMedium,
+              ),
+            )
+          else ...[
+            CategoryDonutChart(entries: summaries),
+            const SizedBox(height: 16),
+            for (final summary in summaries)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: categoryStyle(summary.category).color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        summary.category,
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ),
+                    Text(
+                      money(summary.amount),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 52,
+                      child: Text(
+                        '${formatPercent(summary.percent)}%',
+                        textAlign: TextAlign.right,
+                        style: theme.textTheme.labelMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
   }
 }
 

@@ -37,11 +37,18 @@ class ExpenseRepository {
   }) async {
     final user = _client.auth.currentUser;
     if (user == null) throw StateError('请先登录');
-    final row = await _client
-        .from('expenses')
-        .insert(input.toMap(dormitoryId: dormitoryId, creatorId: user.id))
-        .select()
-        .single();
+    final payload = input.toMap(
+      dormitoryId: dormitoryId,
+      creatorId: user.id,
+    );
+    Map<String, dynamic> row;
+    try {
+      row = await _client.from('expenses').insert(payload).select().single();
+    } on PostgrestException catch (error) {
+      if (!_isMissingExpenseDate(error.message)) rethrow;
+      payload.remove('expense_date');
+      row = await _client.from('expenses').insert(payload).select().single();
+    }
     return Expense.fromMap(row);
   }
 
@@ -54,11 +61,24 @@ class ExpenseRepository {
       creatorId: '',
     )..remove('dormitory_id')
       ..remove('creator_id');
-    await _client.from('expenses').update(payload).eq('id', expenseId);
+    try {
+      await _client.from('expenses').update(payload).eq('id', expenseId);
+    } on PostgrestException catch (error) {
+      if (!_isMissingExpenseDate(error.message)) rethrow;
+      payload.remove('expense_date');
+      await _client.from('expenses').update(payload).eq('id', expenseId);
+    }
   }
 
   Future<void> delete(String expenseId) async {
     await _client.from('expenses').delete().eq('id', expenseId);
+  }
+
+  bool _isMissingExpenseDate(String message) {
+    final lower = message.toLowerCase();
+    return lower.contains('expense_date') ||
+        lower.contains('column') ||
+        lower.contains('does not exist');
   }
 
   List<Expense> _toModels(

@@ -7,8 +7,8 @@ import 'state/dorm_controller.dart';
 import 'state/theme_controller.dart';
 import 'ui/home/auth_gate.dart';
 
-class DormBillApp extends StatelessWidget {
-  const DormBillApp({super.key});
+class OurBillsApp extends StatelessWidget {
+  const OurBillsApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class DormBillApp extends StatelessWidget {
       child: Consumer<ThemeController>(
         builder: (context, themeController, _) {
           return MaterialApp(
-            title: '宿舍账本',
+            title: 'ourbills',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),

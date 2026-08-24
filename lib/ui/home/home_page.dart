@@ -13,8 +13,16 @@ import '../widgets/empty_state.dart';
 import '../widgets/expense_tile.dart';
 import '../widgets/member_avatar.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  static const int _pageSize = 20;
+  int _visibleCount = _pageSize;
 
   void _openEdit(BuildContext context, {Expense? expense}) {
     Navigator.of(context).push(
@@ -31,99 +39,6 @@ class HomePage extends StatelessWidget {
       MaterialPageRoute<void>(
         builder: (_) => DormDetailPage(dormitory: dormitory),
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final auth = context.watch<AuthController>();
-    final dorm = context.watch<DormController>();
-    final dormitory = dorm.currentDormitory;
-    final profile = auth.profile;
-
-    final month = DateTime.now();
-    final monthExpenses = dorm.expenses
-        .where((expense) => sameMonth(expense.createdAt, month))
-        .toList();
-    final totalCents = monthExpenses.fold<int>(
-      0,
-      (sum, expense) => sum + (expense.amount * 100).round(),
-    );
-    final recentExpenses = dorm.expenses.take(5).toList();
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('${month.month}月账单', style: theme.textTheme.labelMedium),
-                  const SizedBox(height: 2),
-                  Text(
-                    '你好，${profile?.username ?? '成员'}',
-                    style: theme.textTheme.headlineMedium,
-                  ),
-                ],
-              ),
-            ),
-            MemberAvatar(
-              name: profile?.username ?? '我',
-              imageUrl: profile?.avatarUrl,
-              size: 44,
-              seed: profile?.id ?? '',
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        if (dormitory != null)
-          _DormitorySummaryCard(
-            dormitoryName: dormitory.name,
-            inviteCode: dormitory.inviteCode,
-            members: dorm.members,
-            monthTotal: totalCents / 100,
-            onTap: () => _openDormitory(context),
-          ),
-        const SizedBox(height: 20),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Text('最近支出', style: theme.textTheme.titleLarge),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const SettlementPage(),
-                  ),
-                );
-              },
-              child: const Text('查看结算'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        if (recentExpenses.isEmpty)
-          const EmptyState(
-            icon: Icons.receipt_long_outlined,
-            title: '还没有支出记录',
-            description: '点击右下角“记一笔”，记录宿舍的第一笔公共支出。',
-          )
-        else
-          for (final expense in recentExpenses)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: ExpenseTile(
-                expense: expense,
-                onTap: () => _openEdit(context, expense: expense),
-                onEdit: () => _openEdit(context, expense: expense),
-                onDelete: () => _confirmDelete(context, dorm, expense),
-              ),
-            ),
-      ],
     );
   }
 
@@ -159,6 +74,129 @@ class HomePage extends StatelessWidget {
         );
       }
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final auth = context.watch<AuthController>();
+    final dorm = context.watch<DormController>();
+    final dormitory = dorm.currentDormitory;
+    final profile = auth.profile;
+
+    final month = DateTime.now();
+    final monthExpenses = dorm.expenses
+        .where((expense) => sameMonth(expense.createdAt, month))
+        .toList();
+    final totalCents = monthExpenses.fold<int>(
+      0,
+      (sum, expense) => sum + (expense.amount * 100).round(),
+    );
+    final allExpenses = dorm.expenses;
+    final visibleExpenses = allExpenses.take(_visibleCount).toList();
+    final hasMore = _visibleCount < allExpenses.length;
+
+    return CustomScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+      slivers: <Widget>[
+        SliverToBoxAdapter(
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text('${month.month}月账单', style: theme.textTheme.labelMedium),
+                    const SizedBox(height: 2),
+                    Text(
+                      '你好，${profile?.username ?? '成员'}',
+                      style: theme.textTheme.headlineMedium,
+                    ),
+                  ],
+                ),
+              ),
+              MemberAvatar(
+                name: profile?.username ?? '我',
+                imageUrl: profile?.avatarUrl,
+                size: 44,
+                seed: profile?.id ?? '',
+              ),
+            ],
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+        if (dormitory != null)
+          SliverToBoxAdapter(
+            child: _DormitorySummaryCard(
+              dormitoryName: dormitory.name,
+              inviteCode: dormitory.inviteCode,
+              members: dorm.members,
+              monthTotal: totalCents / 100,
+              onTap: () => _openDormitory(context),
+            ),
+          ),
+        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+        SliverToBoxAdapter(
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text('全部账目', style: theme.textTheme.titleLarge),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const SettlementPage(),
+                    ),
+                  );
+                },
+                child: const Text('查看结算'),
+              ),
+            ],
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 10)),
+        if (allExpenses.isEmpty)
+          const SliverToBoxAdapter(
+            child: EmptyState(
+              icon: Icons.receipt_long_outlined,
+              title: '还没有支出记录',
+              description: '点击右下角“记一笔”，记录宿舍的第一笔公共支出。',
+            ),
+          )
+        else
+          SliverList.builder(
+            itemCount: visibleExpenses.length,
+            itemBuilder: (context, index) {
+              final expense = visibleExpenses[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: ExpenseTile(
+                  expense: expense,
+                  onTap: () => _openEdit(context, expense: expense),
+                  onEdit: () => _openEdit(context, expense: expense),
+                  onDelete: () => _confirmDelete(context, dorm, expense),
+                ),
+              );
+            },
+          ),
+        if (hasMore)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 6, bottom: 12),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _visibleCount += _pageSize;
+                  });
+                },
+                icon: const Icon(Icons.expand_more_rounded),
+                label: const Text('加载更多'),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 

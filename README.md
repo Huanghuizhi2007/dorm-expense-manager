@@ -1,4 +1,4 @@
-# 宿舍账本 DormBill
+# ourbills
 
 一个接近真实产品的多人共享宿舍公共支出管理 App。宿舍成员共用一个云端数据库，任何成员添加、修改、删除支出后，其他成员会在手机上实时看到；月底自动生成每人应承担金额和谁该给谁多少的结算方案。
 
@@ -12,14 +12,16 @@
 - 任意成员可以添加、编辑、删除支出
 - 按月份浏览、按关键词搜索、按分类筛选
 - 首页显示宿舍名、本月消费、成员数量、最近支出
-- 统计页显示总消费、人均、成员消费排行、个人已付/应承担/差额
+- 首页支持无限滚动查看全部历史账目
+- 独立日历页，按日期标记消费并查看当天明细
+- 统计页显示总消费、分类占比环形图、人均、成员消费排行、个人已付/应承担/差额
 - 自动结算：每人应承担金额、应收/应付差额、最少转账方案
 - 深色模式、离线缓存、Supabase Realtime 实时同步
 
 ## 二、项目文件结构
 
 ```text
-dormbill/
+ourbills/
 ├─ android/                          # Android 工程
 │  └─ app/src/main/kotlin/...        # MainActivity
 ├─ lib/
@@ -29,6 +31,7 @@ dormbill/
 │  │  ├─ app_config.dart             # Supabase URL / anon key 构建参数
 │  │  ├─ app_constants.dart          # 分类、金额、日期、头像工具
 │  │  ├─ app_theme.dart              # 浅色/深色主题
+│  │  ├─ analytics.dart              # 分类统计与日历标记计算
 │  │  └─ settlement_calculator.dart  # 自动结算与转账算法
 │  ├─ data/
 │  │  ├─ supabase_service.dart       # Supabase 客户端
@@ -42,6 +45,7 @@ dormbill/
 │  └─ ui/
 │     ├─ auth/                       # 登录、注册
 │     ├─ home/                       # 首页、宿舍创建/加入、底部导航
+│     ├─ calendar/                   # 独立日历页
 │     ├─ expenses/                   # 账单列表、支出编辑
 │     ├─ stats/                      # 统计、结算单
 │     ├─ profile/                    # 个人资料、宿舍切换、退出
@@ -102,6 +106,7 @@ dormbill/
 | payer_id | uuid | 代付人 |
 | creator_id | uuid | 添加人 |
 | created_at | timestamptz | 支出时间 |
+| expense_date | date | 消费日期，用于日历标记 |
 | updated_at | timestamptz | 修改时间 |
 
 ### settlements（每月结算）
@@ -133,6 +138,7 @@ dormbill/
 1. 打开 [supabase.com](https://supabase.com) 注册并创建免费项目。
 2. 进入项目，左侧菜单打开 **SQL Editor**。
 3. 复制 `supabase/schema.sql` 的全部内容，粘贴后点击 **Run**。
+   如果项目是从旧版本升级，请再执行一次 `supabase/migration_expense_date.sql`。
 4. 打开 **Project Settings -> API**，复制 `Project URL` 和 `anon public key`。
 5. 建议在 **Authentication -> Providers -> Email** 中关闭 “Confirm email”（仅用于测试）；正式发布建议开启邮箱验证。
 
@@ -187,7 +193,7 @@ build/app/outputs/flutter-apk/app-release.apk
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
 3. 打开 **Actions**，运行 `Build Android APK` 工作流。
-4. 构建完成后，在运行记录中下载 `dormbill-release-apk` 产物。
+4. 构建完成后，在运行记录中下载 `ourbills-release-apk` 产物。
 
 每次推送到 `main`/`master` 也会自动触发构建。构建参数写入 `.github/workflows/build-apk.yml`，云端自动执行 `flutter create` 补齐平台文件。
 
@@ -197,7 +203,7 @@ build/app/outputs/flutter-apk/app-release.apk
 
 1. 把 `app-release.apk` 发送到手机（微信文件传输助手、网盘、USB 拷贝等均可）。
 2. 在手机上打开 APK 文件，允许“安装未知来源应用”。
-3. 完成安装后打开“宿舍账本”。
+3. 完成安装后打开“ourbills”。
 
 ### adb 安装
 
@@ -279,4 +285,3 @@ adb install -r build\app\outputs\flutter-apk\app-release.apk
 - 头像上传：可接入 Supabase Storage，把图片 URL 写入 `avatar_url`。
 - 结算提醒：可接入 FCM 推送或 App 内通知。
 - 宿舍规则：可扩展“按人头/按房间/按入住天数”等均摊方式。
-

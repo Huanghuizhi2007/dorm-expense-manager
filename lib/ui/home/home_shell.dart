@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../state/dorm_controller.dart';
+import '../calendar/calendar_page.dart';
 import '../expenses/expense_edit_page.dart';
 import '../expenses/expense_list_page.dart';
 import '../home/home_page.dart';
@@ -32,6 +33,7 @@ class _HomeShellState extends State<HomeShell> {
                 children: const <Widget>[
                   HomePage(),
                   ExpenseListPage(),
+                  CalendarPage(),
                   StatsPage(),
                   ProfilePage(),
                 ],
@@ -73,6 +75,11 @@ class _HomeShellState extends State<HomeShell> {
                   label: '账单',
                 ),
                 NavigationDestination(
+                  icon: Icon(Icons.calendar_month_outlined),
+                  selectedIcon: Icon(Icons.calendar_month_rounded),
+                  label: '日历',
+                ),
+                NavigationDestination(
                   icon: Icon(Icons.insert_chart_outlined_rounded),
                   selectedIcon: Icon(Icons.insert_chart_rounded),
                   label: '统计',
@@ -88,4 +95,3 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 }
-

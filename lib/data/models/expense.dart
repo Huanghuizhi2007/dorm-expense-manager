@@ -1,3 +1,5 @@
+import '../../core/app_constants.dart';
+
 class Expense {
   const Expense({
     required this.id,
@@ -94,6 +96,7 @@ class ExpenseInput {
       'payer_id': payerId,
       'creator_id': creatorId,
       'created_at': createdAt.toUtc().toIso8601String(),
+      'expense_date': dateKey(createdAt),
     };
   }
 }

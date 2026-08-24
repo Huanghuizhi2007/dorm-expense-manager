@@ -66,13 +66,37 @@ class ExpenseTile extends StatelessWidget {
                           size: 16,
                           seed: expense.payerId,
                         ),
-                        const SizedBox(width: 5),
-                        Flexible(
-                          child: Text(
-                            '${expense.payerName ?? '成员'} · ${shortDate(expense.createdAt)}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.labelMedium,
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: <Widget>[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: style.color.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Text(
+                                  expense.category,
+                                  style: TextStyle(
+                                    color: style.color,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '${expense.payerName ?? '成员'} · ${shortDate(expense.createdAt)}',
+                                style: theme.textTheme.labelMedium,
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -119,4 +143,3 @@ class ExpenseTile extends StatelessWidget {
     );
   }
 }
-

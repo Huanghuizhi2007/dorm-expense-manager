@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        '宿舍账本',
+                        'ourbills',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.headlineMedium,
                       ),
@@ -166,4 +166,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-

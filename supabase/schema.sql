@@ -1,5 +1,5 @@
 -- ============================================================
--- 宿舍账本 DormBill
+-- ourbills 宿舍公共支出管理
 -- Supabase SQL 初始化脚本
 -- 在 Supabase Dashboard -> SQL Editor 中整体执行一次即可。
 -- ============================================================
@@ -53,6 +53,7 @@ create table if not exists public.expenses (
   payer_id uuid not null references auth.users(id) on delete restrict,
   creator_id uuid not null references auth.users(id) on delete restrict,
   created_at timestamptz not null default now(),
+  expense_date date not null default current_date,
   updated_at timestamptz not null default now()
 );
 

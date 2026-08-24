@@ -1,7 +1,7 @@
 name: dormbill
-description: 多人共享的宿舍公共支出管理 App
+description: ourbills - 多人共享的宿舍公共支出管理 App
 publish_to: "none"
-version: 1.0.0+1
+version: 1.0.8+8
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
