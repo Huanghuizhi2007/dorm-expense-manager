@@ -96,106 +96,102 @@ class _HomePageState extends State<HomePage> {
     final visibleExpenses = allExpenses.take(_visibleCount).toList();
     final hasMore = _visibleCount < allExpenses.length;
 
-    return CustomScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-      slivers: <Widget>[
-        SliverToBoxAdapter(
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text('${month.month}月账单', style: theme.textTheme.labelMedium),
-                    const SizedBox(height: 2),
-                    Text(
-                      '你好，${profile?.username ?? '成员'}',
-                      style: theme.textTheme.headlineMedium,
-                    ),
-                  ],
+    final headerWidgets = <Widget>[
+      Row(
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('${month.month}月账单', style: theme.textTheme.labelMedium),
+                const SizedBox(height: 2),
+                Text(
+                  '你好，${profile?.username ?? '成员'}',
+                  style: theme.textTheme.headlineMedium,
                 ),
-              ),
-              MemberAvatar(
-                name: profile?.username ?? '我',
-                imageUrl: profile?.avatarUrl,
-                size: 44,
-                seed: profile?.id ?? '',
-              ),
-            ],
-          ),
-        ),
-        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-        if (dormitory != null)
-          SliverToBoxAdapter(
-            child: _DormitorySummaryCard(
-              dormitoryName: dormitory.name,
-              inviteCode: dormitory.inviteCode,
-              members: dorm.members,
-              monthTotal: totalCents / 100,
-              onTap: () => _openDormitory(context),
+              ],
             ),
           ),
-        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-        SliverToBoxAdapter(
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Text('全部账目', style: theme.textTheme.titleLarge),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const SettlementPage(),
-                    ),
-                  );
-                },
-                child: const Text('查看结算'),
-              ),
-            ],
+          MemberAvatar(
+            name: profile?.username ?? '我',
+            imageUrl: profile?.avatarUrl,
+            size: 44,
+            seed: profile?.id ?? '',
           ),
+        ],
+      ),
+      const SizedBox(height: 20),
+      if (dormitory != null)
+        _DormitorySummaryCard(
+          dormitoryName: dormitory.name,
+          inviteCode: dormitory.inviteCode,
+          members: dorm.members,
+          monthTotal: totalCents / 100,
+          onTap: () => _openDormitory(context),
         ),
-        const SliverToBoxAdapter(child: SizedBox(height: 10)),
-        if (allExpenses.isEmpty)
-          const SliverToBoxAdapter(
-            child: EmptyState(
-              icon: Icons.receipt_long_outlined,
-              title: '还没有支出记录',
-              description: '点击右下角“记一笔”，记录宿舍的第一笔公共支出。',
-            ),
-          )
-        else
-          SliverList.builder(
-            itemCount: visibleExpenses.length,
-            itemBuilder: (context, index) {
-              final expense = visibleExpenses[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: ExpenseTile(
-                  expense: expense,
-                  onTap: () => _openEdit(context, expense: expense),
-                  onEdit: () => _openEdit(context, expense: expense),
-                  onDelete: () => _confirmDelete(context, dorm, expense),
+      const SizedBox(height: 20),
+      Row(
+        children: <Widget>[
+          Expanded(
+            child: Text('全部账目', style: theme.textTheme.titleLarge),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const SettlementPage(),
                 ),
               );
             },
+            child: const Text('查看结算'),
           ),
-        if (hasMore)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 6, bottom: 12),
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _visibleCount += _pageSize;
-                  });
-                },
-                icon: const Icon(Icons.expand_more_rounded),
-                label: const Text('加载更多'),
-              ),
+        ],
+      ),
+      const SizedBox(height: 10),
+    ];
+
+    final bodyCount = allExpenses.isEmpty
+        ? 1
+        : visibleExpenses.length + (hasMore ? 1 : 0);
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+      itemCount: headerWidgets.length + bodyCount,
+      itemBuilder: (context, index) {
+        if (index < headerWidgets.length) return headerWidgets[index];
+        final bodyIndex = index - headerWidgets.length;
+        if (allExpenses.isEmpty) {
+          return const EmptyState(
+            icon: Icons.receipt_long_outlined,
+            title: '还没有支出记录',
+            description: '点击右下角“记一笔”，记录宿舍的第一笔公共支出。',
+          );
+        }
+        if (bodyIndex < visibleExpenses.length) {
+          final expense = visibleExpenses[bodyIndex];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: ExpenseTile(
+              expense: expense,
+              onTap: () => _openEdit(context, expense: expense),
+              onEdit: () => _openEdit(context, expense: expense),
+              onDelete: () => _confirmDelete(context, dorm, expense),
             ),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.only(top: 6, bottom: 12),
+          child: OutlinedButton.icon(
+            onPressed: () {
+              setState(() {
+                _visibleCount += _pageSize;
+              });
+            },
+            icon: const Icon(Icons.expand_more_rounded),
+            label: const Text('加载更多'),
           ),
-      ],
+        );
+      },
     );
   }
 }
