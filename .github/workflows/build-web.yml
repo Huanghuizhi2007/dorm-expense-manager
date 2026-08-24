@@ -5,6 +5,10 @@ on:
   push:
     branches: [main, master]
 
+concurrency:
+  group: deploy-ourbills-web
+  cancel-in-progress: false
+
 jobs:
   build-web:
     runs-on: ubuntu-latest
