@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/app_info.dart';
+import '../../data/update_service.dart';
 import '../../state/dorm_controller.dart';
 import '../calendar/calendar_page.dart';
 import '../expenses/expense_edit_page.dart';
@@ -19,6 +24,67 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
+  bool _updateChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
+  }
+
+  Future<void> _checkForUpdate() async {
+    if (_updateChecked || kIsWeb) return;
+    _updateChecked = true;
+
+    final update = await UpdateService.checkLatest();
+    if (update == null || !UpdateService.isNewer(update.version, AppInfo.version)) {
+      return;
+    }
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final dismissed =
+        prefs.getBool('update_dismissed_${update.version}') ?? false;
+    if (dismissed) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('发现新版本'),
+        content: Text(
+          'ourbills ${update.version} 已经发布，点击“去下载”获取最新版。',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool(
+                'update_dismissed_${update.version}',
+                true,
+              );
+              if (context.mounted) Navigator.of(context).pop();
+            },
+            child: const Text('稍后'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool(
+                'update_dismissed_${update.version}',
+                true,
+              );
+              if (context.mounted) Navigator.of(context).pop();
+              await launchUrl(
+                Uri.parse(update.url),
+                mode: LaunchMode.externalApplication,
+              );
+            },
+            child: const Text('去下载'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
