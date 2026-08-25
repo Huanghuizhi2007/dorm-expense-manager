@@ -1,0 +1,49 @@
+<view class="page">
+  <block wx:if="{{hasDorm}}">
+    <view class="card calendar-card">
+      <view class="month-row">
+        <view class="month-arrow" bindtap="previousMonth">‹</view>
+        <view class="month-label">{{monthLabel}}</view>
+        <view class="month-arrow" bindtap="nextMonth">›</view>
+      </view>
+      <view class="today-row" bindtap="backToToday">回到今天</view>
+      <view class="week-row">
+        <view wx:for="{{weekdays}}" wx:key="*this" class="weekday">{{item}}</view>
+      </view>
+      <view class="cal-grid">
+        <view
+          wx:for="{{cells}}"
+          wx:key="key"
+          class="cal-cell {{item.isBlank ? 'cal-blank' : ''}} {{item.isToday ? 'cal-today' : ''}} {{item.isSelected ? 'cal-selected' : ''}}"
+          bindtap="selectDay"
+          data-date="{{item.dateKey}}"
+        >
+          <view class="cal-day">{{item.day || ''}}</view>
+          <view class="cal-dot {{item.hasExpense ? 'cal-dot-on' : ''}}"></view>
+        </view>
+      </view>
+      <view class="legend-row">
+        <view class="legend-item"><view class="legend-dot"></view>有消费</view>
+        <view class="legend-item">点击日期查看当天账单</view>
+      </view>
+    </view>
+
+    <view class="section-title">{{selectedDateLabel || '点击日期查看当天消费'}}</view>
+    <view wx:if="{{loading}}" class="empty">加载中...</view>
+    <block wx:elif="{{dayExpenses.length}}">
+      <view wx:for="{{dayExpenses}}" wx:key="id" class="card day-expense-card">
+        <view class="day-expense-left">
+          <view class="day-expense-title">{{item.title}}</view>
+          <view class="day-expense-meta">{{item.category}} · {{item.payerName}}</view>
+        </view>
+        <view class="day-expense-amount">{{item.amountText}}</view>
+      </view>
+    </block>
+    <view wx:elif="{{selectedDate}}" class="empty">当天没有消费记录</view>
+  </block>
+
+  <view wx:else class="empty">
+    请先创建或加入宿舍
+    <view class="empty-btn" bindtap="goDormSetup">去设置</view>
+  </view>
+</view>

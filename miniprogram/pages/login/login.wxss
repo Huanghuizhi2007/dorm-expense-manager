@@ -1,0 +1,116 @@
+.auth-page {
+  min-height: 100vh;
+  padding: 80rpx 48rpx 60rpx;
+  background: #f6f7f9;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 56rpx;
+}
+
+.brand-mark {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 36rpx;
+  background: #0e7c6b;
+  color: #ffffff;
+  font-size: 44rpx;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24rpx;
+  box-shadow: 0 16rpx 36rpx rgba(14, 124, 107, 0.24);
+}
+
+.brand-name {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: 2rpx;
+}
+
+.brand-sub {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #64748b;
+}
+
+.auth-card {
+  background: #ffffff;
+  border-radius: 28rpx;
+  padding: 36rpx 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(15, 23, 42, 0.06);
+}
+
+.field {
+  margin-bottom: 28rpx;
+}
+
+.field-label {
+  display: block;
+  font-size: 26rpx;
+  color: #475569;
+  margin-bottom: 12rpx;
+  font-weight: 600;
+}
+
+.placeholder {
+  color: #94a3b8;
+}
+
+.login-btn {
+  margin-top: 8rpx;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 36rpx 0;
+  color: #94a3b8;
+  font-size: 24rpx;
+}
+
+.divider-line {
+  flex: 1;
+  height: 2rpx;
+  background: #eef2f7;
+  margin: 0 20rpx;
+}
+
+.btn-wechat {
+  background: #07c160;
+  color: #ffffff;
+  border-radius: 20rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  padding: 22rpx 0;
+}
+
+.btn-wechat::after {
+  border: none;
+}
+
+.wechat-tip {
+  margin-top: 18rpx;
+  text-align: center;
+  font-size: 22rpx;
+  color: #94a3b8;
+}
+
+.register-link {
+  margin-top: 40rpx;
+  text-align: center;
+  font-size: 27rpx;
+  color: #64748b;
+}
+
+.register-link text {
+  color: #0e7c6b;
+  font-weight: 700;
+}

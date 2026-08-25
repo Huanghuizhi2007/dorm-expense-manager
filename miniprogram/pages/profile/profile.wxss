@@ -1,0 +1,134 @@
+.profile-card {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-wrap {
+  position: relative;
+  margin-right: 26rpx;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+}
+
+.avatar-placeholder {
+  background: #e6f4f0;
+  color: #0e7c6b;
+  font-size: 46rpx;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-edit {
+  position: absolute;
+  right: -4rpx;
+  bottom: -4rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #0e7c6b;
+  color: #ffffff;
+  font-size: 20rpx;
+  line-height: 40rpx;
+  text-align: center;
+  border: 4rpx solid #ffffff;
+}
+
+.profile-name {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #111827;
+}
+
+.profile-email {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #94a3b8;
+}
+
+.action-card {
+  padding: 8rpx 28rpx;
+}
+
+.action-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28rpx 0;
+  font-size: 29rpx;
+  color: #1f2937;
+}
+
+.action-arrow {
+  color: #cbd5e1;
+  font-size: 36rpx;
+}
+
+.border-top {
+  border-top: 2rpx solid #f1f5f9;
+}
+
+.dorm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 2rpx solid #f1f5f9;
+}
+
+.dorm-row:last-of-type {
+  border-bottom: none;
+}
+
+.dorm-row-active .dorm-name {
+  color: #0e7c6b;
+}
+
+.dorm-name {
+  font-size: 29rpx;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.dorm-code {
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  color: #94a3b8;
+}
+
+.dorm-check {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  background: #0e7c6b;
+  color: #ffffff;
+  font-size: 26rpx;
+  line-height: 44rpx;
+  text-align: center;
+}
+
+.empty-inline {
+  padding: 28rpx 0;
+  color: #94a3b8;
+  font-size: 26rpx;
+}
+
+.btn-logout {
+  margin-top: 30rpx;
+  background: #ffffff;
+  color: #d9534f;
+  border-radius: 20rpx;
+  font-size: 29rpx;
+  font-weight: 600;
+  padding: 22rpx 0;
+  box-shadow: 0 4rpx 18rpx rgba(15, 23, 42, 0.05);
+}
+
+.btn-logout::after {
+  border: none;
+}

@@ -1,0 +1,62 @@
+<view class="page">
+  <view class="card profile-card">
+    <view class="avatar-wrap" bindtap="changeAvatar">
+      <image wx:if="{{profile.avatar_url}}" class="avatar" src="{{profile.avatar_url}}" mode="aspectFill"></image>
+      <view wx:else class="avatar avatar-placeholder">{{avatarInitial}}</view>
+      <view class="avatar-edit">换</view>
+    </view>
+    <view class="profile-info">
+      <view class="profile-name">{{profile.username || '成员'}}</view>
+      <view class="profile-email">{{email}}</view>
+    </view>
+  </view>
+
+  <view class="card action-card">
+    <view class="action-row" bindtap="editUsername">
+      <text>修改昵称</text>
+      <text class="action-arrow">›</text>
+    </view>
+    <view class="action-row" bindtap="changeAvatar">
+      <text>从手机相册更换头像</text>
+      <text class="action-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="section-title">我的宿舍</view>
+  <view class="card">
+    <view wx:if="{{dorms.length}}">
+      <view
+        wx:for="{{dorms}}"
+        wx:key="id"
+        class="dorm-row {{item.id === currentDormId ? 'dorm-row-active' : ''}}"
+        bindtap="switchDorm"
+        data-id="{{item.id}}"
+      >
+        <view>
+          <view class="dorm-name">{{item.name}}</view>
+          <view class="dorm-code">邀请码 {{item.invite_code}}</view>
+        </view>
+        <view class="dorm-check">{{item.id === currentDormId ? '✓' : ''}}</view>
+      </view>
+    </view>
+    <view wx:else class="empty-inline">还没有加入宿舍</view>
+    <view class="action-row border-top" bindtap="goDormSetup">
+      <text>创建 / 加入宿舍</text>
+      <text class="action-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="section-title">常用功能</view>
+  <view class="card action-card">
+    <view class="action-row" bindtap="goSettlement">
+      <text>月度自动结算</text>
+      <text class="action-arrow">›</text>
+    </view>
+    <view class="action-row" bindtap="goStats">
+      <text>消费统计</text>
+      <text class="action-arrow">›</text>
+    </view>
+  </view>
+
+  <button class="btn-logout" bindtap="handleLogout">退出登录</button>
+</view>

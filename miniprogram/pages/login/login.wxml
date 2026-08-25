@@ -1,0 +1,60 @@
+<view class="auth-page">
+  <view class="brand">
+    <view class="brand-mark">OB</view>
+    <view class="brand-name">ourbills</view>
+    <view class="brand-sub">宿舍公共支出管理</view>
+  </view>
+
+  <view class="auth-card">
+    <view class="field">
+      <text class="field-label">邮箱</text>
+      <input
+        class="input"
+        type="text"
+        placeholder="请输入邮箱"
+        placeholder-class="placeholder"
+        value="{{email}}"
+        bindinput="onEmailInput"
+      />
+    </view>
+    <view class="field">
+      <text class="field-label">密码</text>
+      <input
+        class="input"
+        type="password"
+        placeholder="请输入密码"
+        placeholder-class="placeholder"
+        value="{{password}}"
+        bindinput="onPasswordInput"
+      />
+    </view>
+    <button
+      class="btn-primary login-btn"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+      bindtap="handleLogin"
+    >
+      登录
+    </button>
+
+    <view class="divider">
+      <view class="divider-line"></view>
+      <text>或</text>
+      <view class="divider-line"></view>
+    </view>
+
+    <button
+      class="btn-wechat"
+      loading="{{wechatLoading}}"
+      disabled="{{wechatLoading}}"
+      bindtap="handleWechatLogin"
+    >
+      微信一键登录
+    </button>
+    <view class="wechat-tip">微信登录需要先在后台配置，未配置时可使用邮箱登录</view>
+  </view>
+
+  <view class="register-link" bindtap="goRegister">
+    还没有账号？<text>立即注册</text>
+  </view>
+</view>

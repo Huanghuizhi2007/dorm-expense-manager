@@ -56,6 +56,9 @@ ourbills/
 │     └─ widgets/                    # 通用卡片、头像、空状态
 ├─ supabase/
 │  └─ schema.sql                     # 完整数据库、RLS 权限、结算函数
+├─ miniprogram/                      # 微信小程序客户端（与 Android 共用数据库）
+│  ├─ pages/                         # 首页、日历、统计、结算、我的等页面
+│  └─ utils/                         # Supabase 请求封装、数据接口、结算算法
 ├─ scripts/
 │  ├─ build_apk.bat                  # Windows 一键打包
 │  ├─ build_apk.sh                   # macOS/Linux 一键打包
@@ -355,7 +358,18 @@ adb install -r build\app\outputs\flutter-apk\app-release.apk
 
 “我的”页可以切换深色模式。最近一次宿舍、成员和支出会缓存在手机本地，网络断开时仍能查看上次数据，恢复网络后自动同步。
 
-## 九、后续可扩展
+## 九、微信小程序
+
+项目同时提供微信小程序客户端 `miniprogram/`，无需安装 App，通过微信开发者工具即可编译运行。
+
+- 与 Android App 使用同一个 Supabase 数据库，账号、宿舍、成员、支出和结算数据实时互通。
+- 底部 Tab：首页、日历、统计、我的。
+- 支持邮箱注册/登录、创建/加入宿舍、添加/编辑/删除支出、日历标记、分类统计和月度自动结算。
+- 微信一键登录已预留 Edge Function 模板，配置 AppID/AppSecret 后即可启用。
+
+详细运行、后端配置和发布步骤见 [README-miniprogram.md](README-miniprogram.md)。
+
+## 十、后续可扩展
 
 - iOS：在已安装 Xcode 的电脑执行 `flutter create --platforms=ios --org com.dormbill .`。
 - 头像上传：可接入 Supabase Storage，把图片 URL 写入 `avatar_url`。

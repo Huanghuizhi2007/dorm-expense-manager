@@ -1,0 +1,82 @@
+.form-card {
+  padding-bottom: 12rpx;
+}
+
+.field {
+  margin-bottom: 34rpx;
+}
+
+.field-label {
+  font-size: 26rpx;
+  color: #475569;
+  font-weight: 600;
+  margin-bottom: 14rpx;
+}
+
+.placeholder {
+  color: #94a3b8;
+}
+
+.amount-input {
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -8rpx;
+}
+
+.chip {
+  margin: 8rpx;
+  padding: 14rpx 26rpx;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  border: 2rpx solid transparent;
+}
+
+.chip-active {
+  background: #e6f4f0;
+  color: #0e7c6b;
+  border-color: rgba(14, 124, 107, 0.4);
+  font-weight: 700;
+}
+
+.picker-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  border: 2rpx solid #e2e8f0;
+  border-radius: 18rpx;
+  height: 88rpx;
+  padding: 0 24rpx;
+  font-size: 30rpx;
+  color: #111827;
+}
+
+.picker-arrow {
+  color: #94a3b8;
+  font-size: 36rpx;
+}
+
+.save-btn {
+  margin-top: 8rpx;
+}
+
+.btn-delete {
+  margin-top: 20rpx;
+  background: #ffffff;
+  color: #d9534f;
+  border: 2rpx solid rgba(217, 83, 79, 0.4);
+  border-radius: 18rpx;
+  font-size: 28rpx;
+  padding: 18rpx 0;
+}
+
+.btn-delete::after {
+  border: none;
+}

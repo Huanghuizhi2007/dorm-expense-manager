@@ -1,0 +1,89 @@
+<view class="page home-page">
+  <block wx:if="{{session}}">
+    <block wx:if="{{dormitory}}">
+      <view class="hero-card">
+        <view class="hero-top">
+          <view>
+            <view class="hero-label">当前宿舍</view>
+            <view class="hero-name">{{dormitory.name}}</view>
+            <view class="invite-row" bindtap="copyInviteCode">
+              <text class="invite-code">邀请码 {{dormitory.invite_code}}</text>
+              <text class="copy-text">复制</text>
+            </view>
+          </view>
+          <view class="member-pill">{{members.length}} 位成员</view>
+        </view>
+        <view class="hero-amount-row">
+          <view>
+            <view class="hero-label">本月总支出</view>
+            <view class="hero-amount">{{monthTotal}}</view>
+          </view>
+          <view class="hero-count">{{expenseCount}} 笔</view>
+        </view>
+      </view>
+
+      <view class="section-head">
+        <view class="section-title">全部账单</view>
+        <view class="section-links">
+          <text class="section-link" bindtap="goSettlement">结算</text>
+          <text class="section-count">{{expenses.length}} 条</text>
+        </view>
+      </view>
+
+      <view wx:if="{{expenses.length}}" class="expense-list">
+        <view
+          wx:for="{{expenses}}"
+          wx:key="id"
+          class="card expense-card"
+          hover-class="card-hover"
+          bindlongpress="onLongPressExpense"
+          data-id="{{item.id}}"
+          data-title="{{item.title}}"
+          data-amount="{{item.amount}}"
+          data-category="{{item.category}}"
+          data-payer-id="{{item.payer_id}}"
+          data-date="{{item.expense_date || item.created_at}}"
+        >
+          <view class="expense-main">
+            <view class="category-chip" style="background: {{item.categoryColor}}1A; color: {{item.categoryColor}};">
+              {{item.categoryIcon}} {{item.category}}
+            </view>
+            <view class="expense-title">{{item.title}}</view>
+            <view class="expense-meta">{{item.payerName}} · {{item.dateText}}</view>
+          </view>
+          <view class="expense-amount">{{item.amountText}}</view>
+        </view>
+      </view>
+
+      <view wx:elif="{{loading}}" class="empty">正在加载账单...</view>
+      <view wx:else class="empty">
+        <view class="empty-icon">+</view>
+        <view>还没有支出记录</view>
+        <view class="empty-sub">点击右下角添加第一笔</view>
+      </view>
+
+      <view wx:if="{{loadingMore}}" class="loading-more">加载更多...</view>
+      <view wx:elif="{{expenses.length && !hasMore}}" class="loading-more">已经到底了</view>
+    </block>
+
+    <block wx:else>
+      <view class="card empty-dorm">
+        <view class="empty-dorm-icon">OB</view>
+        <view class="empty-dorm-title">还没有加入宿舍</view>
+        <view class="empty-dorm-sub">创建一个宿舍，或使用邀请码加入已有宿舍</view>
+        <button class="btn-primary dorm-action" bindtap="goDormSetup">创建 / 加入宿舍</button>
+      </view>
+    </block>
+  </block>
+
+  <view wx:else class="empty">正在登录...</view>
+</view>
+
+<view
+  wx:if="{{dormitory}}"
+  class="fab"
+  hover-class="fab-hover"
+  bindtap="goAddExpense"
+>
+  +
+</view>

@@ -1,0 +1,157 @@
+.calendar-card {
+  padding: 28rpx 20rpx 20rpx;
+}
+
+.month-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10rpx;
+}
+
+.month-arrow {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 44rpx;
+  line-height: 66rpx;
+  text-align: center;
+}
+
+.month-label {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: #111827;
+}
+
+.today-row {
+  text-align: right;
+  font-size: 24rpx;
+  color: #0e7c6b;
+  padding: 10rpx 14rpx 16rpx;
+}
+
+.week-row {
+  display: flex;
+  margin-bottom: 12rpx;
+}
+
+.weekday {
+  width: 14.2857%;
+  text-align: center;
+  font-size: 24rpx;
+  color: #94a3b8;
+}
+
+.cal-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cal-cell {
+  width: 14.2857%;
+  height: 88rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18rpx;
+  position: relative;
+}
+
+.cal-day {
+  width: 64rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  text-align: center;
+  font-size: 27rpx;
+  color: #1f2937;
+  border-radius: 50%;
+}
+
+.cal-blank {
+  visibility: hidden;
+}
+
+.cal-today .cal-day {
+  color: #0e7c6b;
+  font-weight: 800;
+  background: #e6f4f0;
+}
+
+.cal-selected .cal-day {
+  background: #0e7c6b;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.cal-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  margin-top: 4rpx;
+  background: transparent;
+}
+
+.cal-dot-on {
+  background: #f2a33c;
+}
+
+.legend-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16rpx;
+  padding: 0 10rpx;
+  font-size: 22rpx;
+  color: #94a3b8;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+}
+
+.legend-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #f2a33c;
+  margin-right: 8rpx;
+}
+
+.day-expense-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.day-expense-title {
+  font-size: 29rpx;
+  font-weight: 700;
+  color: #111827;
+}
+
+.day-expense-meta {
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  color: #64748b;
+}
+
+.day-expense-amount {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.empty-btn {
+  margin: 30rpx auto 0;
+  width: 240rpx;
+  padding: 20rpx 0;
+  border-radius: 18rpx;
+  background: #0e7c6b;
+  color: #ffffff;
+  font-size: 28rpx;
+}

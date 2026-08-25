@@ -1,0 +1,76 @@
+<view class="page">
+  <block wx:if="{{hasDorm}}">
+    <view class="month-selector">
+      <view class="month-arrow" bindtap="previousMonth">‹</view>
+      <picker mode="date" fields="month" value="{{monthKey}}" bindchange="onMonthChange">
+        <view class="month-picker">{{monthLabel}} <text class="month-caret">▾</text></view>
+      </picker>
+      <view class="month-arrow" bindtap="nextMonth">›</view>
+    </view>
+
+    <view class="card summary-card">
+      <view class="summary-label">本月总消费</view>
+      <view class="summary-amount">{{totalText}}</view>
+      <view class="summary-sub">{{count}} 笔支出 · {{members.length}} 位成员</view>
+    </view>
+
+    <view wx:if="{{categoryStats.length}}" class="card">
+      <view class="card-title">消费类型分析</view>
+      <view class="donut-wrap">
+        <view class="donut" style="background: {{donutStyle}};">
+          <view class="donut-hole">
+            <view class="donut-total">{{totalText}}</view>
+            <view class="donut-sub">总消费</view>
+          </view>
+        </view>
+      </view>
+      <view class="category-list">
+        <view wx:for="{{categoryStats}}" wx:key="name" class="category-row">
+          <view class="category-head">
+            <view class="category-name">
+              <view class="color-dot" style="background: {{item.color}};"></view>
+              <text>{{item.name}}</text>
+            </view>
+            <view class="category-amount">{{item.amountText}} · {{item.percent}}%</view>
+          </view>
+          <view class="bar-track">
+            <view class="bar-fill" style="width: {{item.percent}}%; background: {{item.color}};"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="card empty-card">本月还没有消费记录</view>
+
+    <view wx:if="{{ranking.length}}" class="card">
+      <view class="card-title">成员消费排行</view>
+      <view wx:for="{{ranking}}" wx:key="userId" class="rank-row">
+        <view class="rank-badge rank-{{item.rank}}">{{item.rank}}</view>
+        <view class="rank-name">{{item.name}}</view>
+        <view class="rank-amount">{{item.amountText}}</view>
+      </view>
+    </view>
+
+    <view class="card personal-card">
+      <view class="card-title">我的账单</view>
+      <view class="personal-row">
+        <view class="personal-item">
+          <view class="personal-value">{{myPaidText}}</view>
+          <view class="personal-label">已支付</view>
+        </view>
+        <view class="personal-item">
+          <view class="personal-value">{{myShareText}}</view>
+          <view class="personal-label">应承担</view>
+        </view>
+        <view class="personal-item">
+          <view class="personal-value {{myBalancePositive ? 'balance-receive' : 'balance-pay'}}">{{myBalanceText}}</view>
+          <view class="personal-label">{{myBalancePositive ? '可收取' : '还需支付'}}</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view wx:else class="empty">
+    请先创建或加入宿舍
+    <view class="empty-btn" bindtap="goDormSetup">去设置</view>
+  </view>
+</view>

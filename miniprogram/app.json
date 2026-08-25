@@ -1,0 +1,47 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/login/login",
+    "pages/register/register",
+    "pages/dorm-setup/dorm-setup",
+    "pages/add-expense/add-expense",
+    "pages/calendar/calendar",
+    "pages/stats/stats",
+    "pages/settlement/settlement",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarTitleText": "ourbills",
+    "navigationBarBackgroundColor": "#F6F7F9",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F6F7F9",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#64748B",
+    "selectedColor": "#0E7C6B",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/calendar/calendar",
+        "text": "日历"
+      },
+      {
+        "pagePath": "pages/stats/stats",
+        "text": "统计"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

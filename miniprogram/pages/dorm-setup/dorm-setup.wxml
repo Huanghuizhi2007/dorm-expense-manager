@@ -1,0 +1,58 @@
+<view class="page">
+  <view class="section-title">我的宿舍</view>
+  <view wx:if="{{dorms.length}}" class="dorm-list">
+    <view
+      wx:for="{{dorms}}"
+      wx:key="id"
+      class="card dorm-item {{item.id === currentDormId ? 'dorm-active' : ''}}"
+      bindtap="switchDorm"
+      data-id="{{item.id}}"
+    >
+      <view class="dorm-info">
+        <view class="dorm-name">{{item.name}}</view>
+        <view class="dorm-code">邀请码 {{item.invite_code}}</view>
+      </view>
+      <view class="dorm-check" wx:if="{{item.id === currentDormId}}">✓</view>
+    </view>
+  </view>
+  <view wx:else class="empty">还没有加入任何宿舍</view>
+
+  <view class="segmented">
+    <view class="segment {{mode === 'create' ? 'segment-active' : ''}}" bindtap="switchMode" data-mode="create">创建宿舍</view>
+    <view class="segment {{mode === 'join' ? 'segment-active' : ''}}" bindtap="switchMode" data-mode="join">邀请码加入</view>
+  </view>
+
+  <view class="card">
+    <block wx:if="{{mode === 'create'}}">
+      <view class="field-label">宿舍名称</view>
+      <input
+        class="input"
+        placeholder="例如：301 宿舍"
+        placeholder-class="placeholder"
+        maxlength="40"
+        value="{{name}}"
+        bindinput="onNameInput"
+      />
+      <button class="btn-primary action-btn" loading="{{loading}}" disabled="{{loading}}" bindtap="handleCreate">创建宿舍</button>
+      <view class="hint">创建后会自动生成邀请码，发给室友即可加入</view>
+    </block>
+    <block wx:else>
+      <view class="field-label">邀请码</view>
+      <input
+        class="input"
+        placeholder="请输入 8 位邀请码"
+        placeholder-class="placeholder"
+        value="{{code}}"
+        bindinput="onCodeInput"
+      />
+      <button class="btn-primary action-btn" loading="{{loading}}" disabled="{{loading}}" bindtap="handleJoin">加入宿舍</button>
+      <view class="hint">邀请码可以在宿舍创建者的首页查看</view>
+    </block>
+  </view>
+
+  <view wx:if="{{currentDormId}}" class="card danger-zone">
+    <view class="danger-title">删除当前宿舍</view>
+    <view class="danger-sub">仅创建者可以删除，删除后所有账单和成员关系都会被移除</view>
+    <button class="btn-danger" bindtap="handleDelete">删除宿舍</button>
+  </view>
+</view>

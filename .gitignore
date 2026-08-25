@@ -31,6 +31,9 @@ dist/
 Thumbs.db
 .DS_Store
 
+# WeChat miniprogram local config
+miniprogram/project.private.config.json
+
 # HarmonyOS build output and local config
 ohos/.idea/
 ohos/.hvigor/

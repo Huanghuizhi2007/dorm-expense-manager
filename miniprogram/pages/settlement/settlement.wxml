@@ -1,0 +1,56 @@
+<view class="page">
+  <block wx:if="{{hasDorm}}">
+    <view class="month-selector">
+      <view class="month-arrow" bindtap="previousMonth">‹</view>
+      <picker mode="date" fields="month" value="{{monthKey}}" bindchange="onMonthChange">
+        <view class="month-picker">{{monthLabel}} <text class="month-caret">▾</text></view>
+      </picker>
+      <view class="month-arrow" bindtap="nextMonth">›</view>
+    </view>
+
+    <button class="btn-primary generate-btn" loading="{{generating}}" disabled="{{generating}}" bindtap="generateSettlement">
+      {{generating ? '正在计算...' : '生成当月结算'}}
+    </button>
+
+    <view wx:if="{{entries.length}}" class="card total-card">
+      <view class="total-label">{{monthLabel}} 总支出</view>
+      <view class="total-amount">{{totalText}}</view>
+      <view class="total-sub">{{entries.length}} 位成员 · 按人均均摊</view>
+    </view>
+
+    <view wx:if="{{entries.length}}" class="card">
+      <view class="card-title">成员结算明细</view>
+      <view wx:for="{{entries}}" wx:key="user_id" class="entry-row">
+        <view class="entry-main">
+          <view class="entry-avatar">{{item.initial}}</view>
+          <view class="entry-name">{{item.username}}</view>
+        </view>
+        <view class="entry-numbers">
+          <view class="entry-line">已支付 <text>{{item.paidText}}</text></view>
+          <view class="entry-line">应承担 <text>{{item.shareText}}</text></view>
+          <view class="entry-line {{item.balance >= 0 ? 'balance-receive' : 'balance-pay'}}">
+            {{item.balance >= 0 ? '应收' : '需付'}} <text>{{item.balanceText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{transfers.length}}" class="card">
+      <view class="card-title">转账建议</view>
+      <view wx:for="{{transfers}}" wx:key="index" class="transfer-row">
+        <view class="transfer-people">{{item.from}} <text class="transfer-arrow">→</text> {{item.to}}</view>
+        <view class="transfer-amount">{{item.amountText}}</view>
+      </view>
+      <view class="transfer-tip">按最少的转账次数自动生成，实际付款后可在下一次结算中体现</view>
+    </view>
+
+    <view wx:elif="{{!generating}}" class="empty">
+      {{entries.length ? '' : '还没有生成结算，点击上方按钮计算'}}
+    </view>
+  </block>
+
+  <view wx:else class="empty">
+    请先创建或加入宿舍
+    <view class="empty-btn" bindtap="goDormSetup">去设置</view>
+  </view>
+</view>
