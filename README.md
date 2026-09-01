@@ -17,7 +17,7 @@
 - 统计页显示总消费、分类占比环形图、人均、成员消费排行、个人已付/应承担/差额
 - 自动结算：每人应承担金额、应收/应付差额、最少转账方案
 - 深色模式、离线缓存、Supabase Realtime 实时同步
-- 打开 App 自动检查 GitHub 新版本，发现新版时弹窗提醒并跳转下载页
+- 打开 App 自动检查新版本（优先 Supabase 云端，GitHub 备用），发现新版时弹窗提醒并跳转下载页
 
 ## 二、项目文件结构
 
@@ -211,6 +211,41 @@ build/app/outputs/flutter-apk/app-release.apk
 从本版本开始，GitHub 云端打包会使用一个固定的安卓签名密钥（保存在仓库 Secrets 中），因此以后每次发布新版本都可以直接覆盖安装，不需要先卸载。
 
 注意：如果手机里现在安装的是更早版本（使用旧的随机签名），第一次切换到新固定签名时仍需要卸载一次。安装好这次发布的新版之后，以后所有新版本都能直接更新。
+
+### 国内可用的 App 内更新发布
+
+App 的更新检测已改为“Supabase 优先、GitHub 备用”：国内用户可以直接从 Supabase 下载新版，海外或 Supabase 暂时不可用时自动回退到 GitHub Release。
+
+首次发布前，先在 Supabase SQL Editor 执行一次 `supabase/migration_app_releases.sql`，它会创建：
+
+- `app_releases` 版本表，客户端只读，写入通过后台完成
+- `releases` 公开存储桶，用于存放 APK
+
+以后每次发布新版：
+
+1. 按上面的方法打包 `app-release.apk`。
+2. 把 APK 重命名为 `ourbills-v{版本号}.apk`，例如 `ourbills-v1.0.12.apk`。
+3. 在 Supabase Dashboard -> Storage 中上传到 `releases` 存储桶。
+4. 上传完成后复制公开地址，格式为：
+
+```text
+https://vjvmtlijqhprhxjglqxf.supabase.co/storage/v1/object/public/releases/ourbills-v1.0.12.apk
+```
+
+5. 在 Supabase SQL Editor 写入版本记录：
+
+```sql
+insert into public.app_releases (version, url, notes)
+values (
+  '1.0.12',
+  'https://vjvmtlijqhprhxjglqxf.supabase.co/storage/v1/object/public/releases/ourbills-v1.0.12.apk',
+  '本次更新说明'
+);
+```
+
+6. 可选：同时在 GitHub Releases 上传同一个 APK，作为海外用户和备用下载通道。
+
+用户下次打开 App 时会自动检查版本，发现新版本号后弹窗提示并直接跳转下载。
 
 ### Windows 桌面版
 
