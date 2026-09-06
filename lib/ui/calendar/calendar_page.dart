@@ -7,6 +7,7 @@ import '../../core/chore_calculator.dart';
 import '../../data/models/expense.dart';
 import '../../state/dorm_controller.dart';
 import '../chore/chore_actions.dart';
+import '../chore/chore_home_page.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/expense_tile.dart';
 import '../widgets/chore_task_tile.dart';
@@ -98,7 +99,68 @@ class _CalendarPageState extends State<CalendarPage> {
             label: const Text('今天'),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 10),
+        Material(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ChoreHomePage(),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFFE9A23B).withOpacity(0.45),
+                ),
+              ),
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE9A23B).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.cleaning_services_outlined,
+                      color: Color(0xFFE9A23B),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          dorm.choreRule == null ? '宿舍值日安排' : '今日值日',
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _choreEntrySubtitle(dorm, now),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right_rounded),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
         Row(
           children: <Widget>[
             for (final label in const <String>['一', '二', '三', '四', '五', '六', '日'])
@@ -194,6 +256,16 @@ class _CalendarPageState extends State<CalendarPage> {
           ),
       ],
     );
+  }
+
+  String _choreEntrySubtitle(DormController dorm, DateTime now) {
+    if (dorm.choreRule == null) {
+      return '还没有值日规则，点击设置排班';
+    }
+    final todayTask = taskOnDate(dorm.choreTasks, now);
+    if (todayTask == null) return '今天没有排班，点击查看本周安排';
+    final name = memberNameById(dorm, todayTask.memberId);
+    return todayTask.isDone ? '$name 已完成今天值日' : '今天轮到 $name 值日';
   }
 }
 
