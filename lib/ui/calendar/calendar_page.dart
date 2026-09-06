@@ -3,10 +3,13 @@ import 'package:provider/provider.dart';
 
 import '../../core/analytics.dart';
 import '../../core/app_constants.dart';
+import '../../core/chore_calculator.dart';
 import '../../data/models/expense.dart';
 import '../../state/dorm_controller.dart';
+import '../chore/chore_actions.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/expense_tile.dart';
+import '../widgets/chore_task_tile.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -54,9 +57,16 @@ class _CalendarPageState extends State<CalendarPage> {
     final theme = Theme.of(context);
     final dorm = context.watch<DormController>();
     final markedDays = expenseDaysInMonth(dorm.expenses, _month);
+    final choreDays = <int>{
+      for (final task in dorm.choreTasks)
+        if (sameMonth(task.taskDate, _month)) task.taskDate.day,
+    };
     final selectedExpenses = _selectedDate == null
         ? <Expense>[]
         : expensesOnDay(dorm.expenses, _selectedDate!);
+    final selectedChore = _selectedDate == null
+        ? null
+        : taskOnDate(dorm.choreTasks, _selectedDate!);
     final daysInMonth = DateTime(_month.year, _month.month + 1, 0).day;
     final leadingEmpty = DateTime(_month.year, _month.month, 1).weekday - 1;
     final now = DateTime.now();
@@ -121,11 +131,13 @@ class _CalendarPageState extends State<CalendarPage> {
             final isSelected = _selectedDate != null &&
                 sameDay(_selectedDate!, date);
             final hasExpense = markedDays.contains(day);
+            final hasChore = choreDays.contains(day);
             return _DayCell(
               day: day,
               isToday: isToday,
               isSelected: isSelected,
               hasExpense: hasExpense,
+              hasChore: hasChore,
               onTap: () {
                 setState(() {
                   _selectedDate = date;
@@ -141,18 +153,40 @@ class _CalendarPageState extends State<CalendarPage> {
             style: theme.textTheme.titleLarge,
           ),
           const SizedBox(height: 10),
-          if (selectedExpenses.isEmpty)
+          if (selectedChore != null) ...[
+            Text('值日任务', style: theme.textTheme.titleLarge),
+            const SizedBox(height: 10),
+            ChoreTaskTile(
+              task: selectedChore,
+              memberName: memberNameById(dorm, selectedChore.memberId),
+              showDate: false,
+              onComplete: selectedChore.isDone
+                  ? null
+                  : () => completeChore(context, selectedChore),
+              onAdjust: selectedChore.isDone
+                  ? null
+                  : () => showChoreAdjustSheet(
+                      context,
+                      initialDate: selectedChore.taskDate,
+                    ),
+            ),
+            const SizedBox(height: 20),
+          ],
+          if (selectedExpenses.isEmpty && selectedChore == null)
             const EmptyState(
               icon: Icons.event_available_rounded,
-              title: '当天没有消费记录',
-              description: '点击“记一笔”可以补充当天的支出。',
+              title: '当天没有安排',
+              description: '没有消费记录，也没有值日任务。',
             )
-          else
+          else if (selectedExpenses.isNotEmpty) ...[
+            Text('消费记录', style: theme.textTheme.titleLarge),
+            const SizedBox(height: 10),
             for (final expense in selectedExpenses)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: ExpenseTile(expense: expense),
               ),
+          ],
         ] else
           Text(
             '点击日期查看当天消费',
@@ -169,6 +203,7 @@ class _DayCell extends StatelessWidget {
     required this.isToday,
     required this.isSelected,
     required this.hasExpense,
+    required this.hasChore,
     required this.onTap,
   });
 
@@ -176,14 +211,16 @@ class _DayCell extends StatelessWidget {
   final bool isToday;
   final bool isSelected;
   final bool hasExpense;
+  final bool hasChore;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasAny = hasExpense || hasChore;
     final backgroundColor = isSelected
         ? theme.colorScheme.primary
-        : hasExpense
+        : hasAny
             ? theme.colorScheme.primary.withOpacity(0.08)
             : Colors.transparent;
     final textColor = isSelected
@@ -211,15 +248,33 @@ class _DayCell extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Container(
-              width: 5,
-              height: 5,
-              decoration: BoxDecoration(
-                color: hasExpense
-                    ? (isSelected ? Colors.white : theme.colorScheme.primary)
-                    : Colors.transparent,
-                shape: BoxShape.circle,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                if (hasExpense)
+                  Container(
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.white
+                          : theme.colorScheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                if (hasChore)
+                  Container(
+                    width: 5,
+                    height: 5,
+                    margin: EdgeInsets.only(
+                      left: hasExpense ? 3 : 0,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE9A23B),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+              ],
             ),
           ],
         ),

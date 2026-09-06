@@ -7,6 +7,7 @@ import '../../data/models/dorm_member.dart';
 import '../../data/models/dormitory.dart';
 import '../../state/auth_controller.dart';
 import '../../state/dorm_controller.dart';
+import '../chore/chore_home_page.dart';
 import '../widgets/member_avatar.dart';
 
 class DormDetailPage extends StatefulWidget {
@@ -240,6 +241,62 @@ class _DormDetailPageState extends State<DormDetailPage> {
                     ),
                   ),
                 ),
+          const SizedBox(height: 20),
+          Text('宿舍工具', style: theme.textTheme.titleLarge),
+          const SizedBox(height: 10),
+          Material(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(8),
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ChoreHomePage(),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: theme.dividerColor),
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE9A23B).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.cleaning_services_outlined,
+                        color: Color(0xFFE9A23B),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text('值日安排', style: theme.textTheme.titleMedium),
+                          const SizedBox(height: 2),
+                          Text(
+                            '设置成员顺序，自动生成宿舍值日排班',
+                            style: theme.textTheme.labelMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded),
+                  ],
+                ),
+              ),
+            ),
+          ),
           const SizedBox(height: 20),
           if (canDelete)
             OutlinedButton.icon(

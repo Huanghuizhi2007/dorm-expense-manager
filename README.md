@@ -16,6 +16,7 @@
 - 独立日历页，按日期标记消费并查看当天明细
 - 统计页显示总消费、分类占比环形图、人均、成员消费排行、个人已付/应承担/差额
 - 自动结算：每人应承担金额、应收/应付差额、最少转账方案
+- 宿舍值日排班：成员顺序 + 间隔天数 + 开始日期，自动生成半年安排，支持手动调整和完成打卡
 - 深色模式、离线缓存、Supabase Realtime 实时同步
 - 打开 App 自动检查新版本（优先 Supabase 云端，GitHub 备用），发现新版时弹窗提醒并跳转下载页
 
@@ -36,7 +37,8 @@ ourbills/
 │  │  ├─ app_constants.dart          # 分类、金额、日期、头像工具
 │  │  ├─ app_theme.dart              # 浅色/深色主题
 │  │  ├─ analytics.dart              # 分类统计与日历标记计算
-│  │  └─ settlement_calculator.dart  # 自动结算与转账算法
+│  │  ├─ settlement_calculator.dart  # 自动结算与转账算法
+│  │  └─ chore_calculator.dart       # 值日排班算法
 │  ├─ data/
 │  │  ├─ supabase_service.dart       # Supabase 客户端
 │  │  ├─ cache_service.dart          # SharedPreferences 离线缓存
@@ -50,12 +52,14 @@ ourbills/
 │     ├─ auth/                       # 登录、注册
 │     ├─ home/                       # 首页、宿舍创建/加入、底部导航
 │     ├─ calendar/                   # 独立日历页
+│     ├─ chore/                      # 值日安排、规则设置、单日调整
 │     ├─ expenses/                   # 账单列表、支出编辑
 │     ├─ stats/                      # 统计、结算单
 │     ├─ profile/                    # 个人资料、宿舍切换、退出
 │     └─ widgets/                    # 通用卡片、头像、空状态
 ├─ supabase/
-│  └─ schema.sql                     # 完整数据库、RLS 权限、结算函数
+│  ├─ schema.sql                     # 完整数据库、RLS 权限、结算函数
+│  └─ migration_chore_schedule.sql   # 值日排班三张表和 RLS
 ├─ miniprogram/                      # 微信小程序客户端（与 Android 共用数据库）
 │  ├─ pages/                         # 首页、日历、统计、结算、我的等页面
 │  └─ utils/                         # Supabase 请求封装、数据接口、结算算法
@@ -133,6 +137,32 @@ ourbills/
 
 `dormitory_id + month + user_id` 唯一，同一月份重复生成时自动覆盖。
 
+### chore_rules（值日规则）
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| id | uuid | 规则 ID |
+| dormitory_id | uuid | 宿舍，每宿舍最多一条规则 |
+| member_order | jsonb | 成员 user_id 顺序 |
+| interval_days | integer | 值日间隔天数 |
+| start_date | date | 第一次值日日期 |
+
+### chore_tasks（值日任务）
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| id | uuid | 任务 ID |
+| dormitory_id | uuid | 宿舍 |
+| member_id | uuid | 当天值日成员 |
+| task_date | date | 值日日期，宿舍内唯一 |
+| source | text | `auto` 自动生成 / `manual` 手动调整 |
+| status | text | `pending` 待完成 / `done` 已完成 |
+| completed_by / completed_at | uuid / timestamptz | 完成人和完成时间 |
+
+### chore_records（值日完成记录）
+
+每次完成值日写入一条：宿舍、成员、日期、是否手动调整、完成人、完成时间。
+
 ### 权限规则
 
 - 只有宿舍成员能查看该宿舍的成员、支出和结算。
@@ -148,6 +178,7 @@ ourbills/
 2. 进入项目，左侧菜单打开 **SQL Editor**。
 3. 复制 `supabase/schema.sql` 的全部内容，粘贴后点击 **Run**。
    如果项目是从旧版本升级，请再执行一次 `supabase/migration_expense_date.sql`。
+   使用值日排班前，再执行一次 `supabase/migration_chore_schedule.sql`。
 4. 打开 **Project Settings -> API**，复制 `Project URL` 和 `anon public key`。
 5. 建议在 **Authentication -> Providers -> Email** 中关闭 “Confirm email”（仅用于测试）；正式发布建议开启邮箱验证。
 
@@ -388,6 +419,14 @@ adb install -r build\app\outputs\flutter-apk\app-release.apk
 - 统计页显示本月总支出、人均、笔数、成员消费排行、个人已付/应承担/差额。
 - 打开“结算单”可以看到谁应该给谁多少钱，以及每位成员的完整明细。
 - 结算结果同时写入云端的 `settlements` 表，打开统计页时会自动生成并同步。
+
+### 值日排班
+
+- 首页点击宿舍卡片进入“宿舍详情”，在“宿舍工具”中点击“值日安排”。
+- 第一次使用时设置成员顺序、间隔天数和开始日期，系统自动生成未来至少 6 个月任务。
+- 日历页会显示值日日期圆点；点击日期可以看到当天值日成员，并支持“完成值日”或“调整成员”。
+- 单日调整只改当天，任务会标记为“手动调整”，不会打乱后续自动排班。
+- 修改规则后，未来未完成安排会重新生成，已完成记录不会被覆盖。
 
 ### 深色模式与离线缓存
 

@@ -4,11 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/cache_service.dart';
+import '../data/models/chore_rule.dart';
+import '../data/models/chore_task.dart';
 import '../data/models/dorm_member.dart';
 import '../data/models/dormitory.dart';
 import '../data/models/expense.dart';
 import '../data/models/settlement_entry.dart';
 import '../data/repositories/dormitory_repository.dart';
+import '../data/repositories/chore_repository.dart';
 import '../data/repositories/expense_repository.dart';
 import '../data/repositories/settlement_repository.dart';
 import '../data/supabase_service.dart';
@@ -17,11 +20,14 @@ class DormController extends ChangeNotifier {
   final ExpenseRepository _expenseRepository = ExpenseRepository();
   final DormitoryRepository _dormitoryRepository = DormitoryRepository();
   final SettlementRepository _settlementRepository = SettlementRepository();
+  final ChoreRepository _choreRepository = ChoreRepository();
 
   List<Dormitory> _dormitories = <Dormitory>[];
   Dormitory? _currentDormitory;
   List<DormMember> _members = <DormMember>[];
   List<Expense> _expenses = <Expense>[];
+  ChoreRule? _choreRule;
+  List<ChoreTask> _choreTasks = <ChoreTask>[];
   bool _isLoading = false;
   String? _errorMessage;
   String? _loadedUserId;
@@ -32,6 +38,8 @@ class DormController extends ChangeNotifier {
   Dormitory? get currentDormitory => _currentDormitory;
   List<DormMember> get members => _members;
   List<Expense> get expenses => _expenses;
+  ChoreRule? get choreRule => _choreRule;
+  List<ChoreTask> get choreTasks => _choreTasks;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -52,6 +60,8 @@ class DormController extends ChangeNotifier {
     _currentDormitory = null;
     _members = <DormMember>[];
     _expenses = <Expense>[];
+    _choreRule = null;
+    _choreTasks = <ChoreTask>[];
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -61,6 +71,8 @@ class DormController extends ChangeNotifier {
         _currentDormitory = null;
         _members = <DormMember>[];
         _expenses = <Expense>[];
+        _choreRule = null;
+        _choreTasks = <ChoreTask>[];
       } else {
         final lastId = await CacheService.lastDormitoryId(userId);
         Dormitory? target;
@@ -118,6 +130,8 @@ class DormController extends ChangeNotifier {
       await CacheService.cacheDormitory(userId, dormitory);
     }
     _currentDormitory = dormitory;
+    _choreRule = null;
+    _choreTasks = <ChoreTask>[];
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -128,6 +142,13 @@ class DormController extends ChangeNotifier {
         dormitoryId: dormitory.id,
         members: _members,
       );
+      try {
+        await _loadChoreState(dormitory.id);
+      } catch (_) {
+        // 值日表尚未初始化时不影响原有账单功能。
+        _choreRule = null;
+        _choreTasks = <ChoreTask>[];
+      }
       await _cacheCurrent();
       _startExpenseStream();
     } catch (error) {
@@ -258,8 +279,81 @@ class DormController extends ChangeNotifier {
         _currentDormitory = null;
         _members = <DormMember>[];
         _expenses = <Expense>[];
+        _choreRule = null;
+        _choreTasks = <ChoreTask>[];
       }
     }
+    notifyListeners();
+  }
+
+  Future<void> _loadChoreState(String dormitoryId) async {
+    _choreRule = await _choreRepository.fetchRule(dormitoryId);
+    if (_choreRule == null) {
+      _choreTasks = <ChoreTask>[];
+      return;
+    }
+    await _choreRepository.regenerate(_choreRule!);
+    _choreTasks = await _choreRepository.fetchTasks(dormitoryId);
+  }
+
+  Future<void> refreshChores() async {
+    final dormitory = _currentDormitory;
+    if (dormitory == null) return;
+    try {
+      await _loadChoreState(dormitory.id);
+    } catch (error) {
+      _errorMessage = _friendlyError(error);
+    }
+    notifyListeners();
+  }
+
+  Future<void> saveChoreRule({
+    required List<String> memberOrder,
+    required int intervalDays,
+    required DateTime startDate,
+  }) async {
+    final dormitory = _currentDormitory;
+    if (dormitory == null) return;
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _choreRepository.saveRule(
+        dormitoryId: dormitory.id,
+        memberOrder: memberOrder,
+        intervalDays: intervalDays,
+        startDate: startDate,
+      );
+      await _loadChoreState(dormitory.id);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> adjustChoreTask({
+    required DateTime date,
+    required String memberId,
+  }) async {
+    final dormitory = _currentDormitory;
+    if (dormitory == null) return;
+    await _choreRepository.setManualTask(
+      dormitoryId: dormitory.id,
+      memberId: memberId,
+      date: date,
+    );
+    await _loadChoreState(dormitory.id);
+    notifyListeners();
+  }
+
+  Future<void> completeChoreTask(ChoreTask task) async {
+    final currentUser = SupabaseService.client.auth.currentUser;
+    if (currentUser == null) return;
+    await _choreRepository.completeTask(
+      task: task,
+      completedBy: currentUser.id,
+    );
+    await _loadChoreState(task.dormitoryId);
     notifyListeners();
   }
 
@@ -310,12 +404,15 @@ class DormController extends ChangeNotifier {
     _currentDormitory = null;
     _members = <DormMember>[];
     _expenses = <Expense>[];
+    _choreRule = null;
+    _choreTasks = <ChoreTask>[];
     _isLoading = false;
     _errorMessage = null;
     notifyListeners();
   }
 
   String _friendlyError(Object error) {
+    if (error is StateError) return error.message;
     if (error is PostgrestException) {
       final message = error.message;
       if (message.contains('INVITE_NOT_FOUND')) return '邀请码不存在，请检查后重试。';
