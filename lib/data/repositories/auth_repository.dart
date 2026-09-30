@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_constants.dart';
+import '../../core/network_retry.dart';
 import '../models/user_profile.dart';
 import '../supabase_service.dart';
 
@@ -12,10 +13,12 @@ class AuthRepository {
     required String email,
     required String password,
   }) {
-    return _client.auth.signUp(
-      email: email.trim(),
-      password: password,
-      data: <String, dynamic>{'username': username.trim()},
+    return runWithRetry(
+      () => _client.auth.signUp(
+        email: email.trim(),
+        password: password,
+        data: <String, dynamic>{'username': username.trim()},
+      ),
     );
   }
 
@@ -23,20 +26,20 @@ class AuthRepository {
     required String email,
     required String password,
   }) {
-    return _client.auth.signInWithPassword(
-      email: email.trim(),
-      password: password,
+    return runWithRetry(
+      () => _client.auth.signInWithPassword(
+        email: email.trim(),
+        password: password,
+      ),
     );
   }
 
   Future<void> signOut() => _client.auth.signOut();
 
   Future<UserProfile?> fetchProfile(String userId) async {
-    final row = await _client
-        .from('profiles')
-        .select()
-        .eq('id', userId)
-        .maybeSingle();
+    final row = await runWithRetry(
+      () => _client.from('profiles').select().eq('id', userId).maybeSingle(),
+    );
     if (row != null) return UserProfile.fromMap(row);
     return UserProfile(
       id: userId,
@@ -55,13 +58,19 @@ class AuthRepository {
       payload['username'] = username.trim();
     }
     if (avatarUrl != null) {
-      payload['avatar_url'] = avatarUrl.trim().isEmpty ? null : avatarUrl.trim();
+      payload['avatar_url'] =
+          avatarUrl.trim().isEmpty ? null : avatarUrl.trim();
     }
     if (payload.isEmpty) return;
-    await _client.from('profiles').update(payload).eq('id', userId);
+    await runWithRetry(
+      () => _client.from('profiles').update(payload).eq('id', userId),
+    );
   }
 
   String friendlyError(Object error) {
+    if (isRetryableNetworkError(error)) {
+      return '网络连接被中断，已自动重试仍未成功。请切换 Wi-Fi / 流量或稍后再试。';
+    }
     if (error is AuthException) {
       final message = error.message;
       if (message.contains('already registered')) return '该邮箱已经注册，请直接登录。';
@@ -75,4 +84,3 @@ class AuthRepository {
     return '网络连接失败，请稍后重试。';
   }
 }
-

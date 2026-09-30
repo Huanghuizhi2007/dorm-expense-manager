@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_constants.dart';
+import '../../core/network_retry.dart';
 import '../models/settlement_entry.dart';
 import '../supabase_service.dart';
 
@@ -11,12 +12,14 @@ class SettlementRepository {
     required String dormitoryId,
     required DateTime month,
   }) async {
-    final result = await _client.rpc(
-      'generate_monthly_settlements',
-      params: <String, dynamic>{
-        'p_dormitory_id': dormitoryId,
-        'p_month': monthKey(month),
-      },
+    final result = await runWithRetry(
+      () => _client.rpc(
+        'generate_monthly_settlements',
+        params: <String, dynamic>{
+          'p_dormitory_id': dormitoryId,
+          'p_month': monthKey(month),
+        },
+      ),
     );
     final rows = result as List<dynamic>;
     return rows
@@ -28,22 +31,26 @@ class SettlementRepository {
     required String dormitoryId,
     required DateTime month,
   }) async {
-    final rows = await _client
-        .from('settlements')
-        .select()
-        .eq('dormitory_id', dormitoryId)
-        .eq('month', monthKey(month))
-        .order('balance', ascending: false);
+    final rows = await runWithRetry(
+      () => _client
+          .from('settlements')
+          .select()
+          .eq('dormitory_id', dormitoryId)
+          .eq('month', monthKey(month))
+          .order('balance', ascending: false),
+    );
     final userIds = rows
         .map((row) => row['user_id'] as String)
         .toSet()
         .toList();
     if (userIds.isEmpty) return <SettlementEntry>[];
 
-    final profileRows = await _client
-        .from('profiles')
-        .select('id, username')
-        .inFilter('id', userIds);
+    final profileRows = await runWithRetry(
+      () => _client
+          .from('profiles')
+          .select('id, username')
+          .inFilter('id', userIds),
+    );
     final usernames = <String, String>{
       for (final profile in profileRows)
         profile['id'] as String: (profile['username'] as String?) ?? '成员',

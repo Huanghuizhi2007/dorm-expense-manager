@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/network_retry.dart';
 import '../data/cache_service.dart';
 import '../data/models/chore_rule.dart';
 import '../data/models/chore_task.dart';
@@ -98,10 +99,12 @@ class DormController extends ChangeNotifier {
   }
 
   Future<void> _loadDormitories(String userId) async {
-    final memberRows = await SupabaseService.client
-        .from('members')
-        .select('dormitory_id')
-        .eq('user_id', userId);
+    final memberRows = await runWithRetry(
+      () => SupabaseService.client
+          .from('members')
+          .select('dormitory_id')
+          .eq('user_id', userId),
+    );
     final ids = memberRows
         .map((row) => row['dormitory_id'] as String)
         .toSet()
@@ -110,10 +113,12 @@ class DormController extends ChangeNotifier {
       _dormitories = <Dormitory>[];
       return;
     }
-    final rows = await SupabaseService.client
-        .from('dormitories')
-        .select()
-        .inFilter('id', ids);
+    final rows = await runWithRetry(
+      () => SupabaseService.client
+          .from('dormitories')
+          .select()
+          .inFilter('id', ids),
+    );
     _dormitories = rows.map(Dormitory.fromMap).toList();
   }
 
@@ -165,21 +170,25 @@ class DormController extends ChangeNotifier {
   }
 
   Future<List<DormMember>> _fetchMembers(String dormitoryId) async {
-    final rows = await SupabaseService.client
-        .from('members')
-        .select()
-        .eq('dormitory_id', dormitoryId)
-        .order('joined_at', ascending: true);
+    final rows = await runWithRetry(
+      () => SupabaseService.client
+          .from('members')
+          .select()
+          .eq('dormitory_id', dormitoryId)
+          .order('joined_at', ascending: true),
+    );
     final userIds = rows
         .map((row) => row['user_id'] as String)
         .toSet()
         .toList();
     if (userIds.isEmpty) return <DormMember>[];
 
-    final profileRows = await SupabaseService.client
-        .from('profiles')
-        .select('id, username, avatar_url')
-        .inFilter('id', userIds);
+    final profileRows = await runWithRetry(
+      () => SupabaseService.client
+          .from('profiles')
+          .select('id, username, avatar_url')
+          .inFilter('id', userIds),
+    );
     final profilesById = <String, Map<String, dynamic>>{
       for (final profile in profileRows) profile['id'] as String: profile,
     };
@@ -413,6 +422,9 @@ class DormController extends ChangeNotifier {
 
   String _friendlyError(Object error) {
     if (error is StateError) return error.message;
+    if (isRetryableNetworkError(error)) {
+      return '网络连接被中断，已自动重试仍未成功。请切换 Wi-Fi / 流量或稍后再试。';
+    }
     if (error is PostgrestException) {
       final message = error.message;
       if (message.contains('INVITE_NOT_FOUND')) return '邀请码不存在，请检查后重试。';

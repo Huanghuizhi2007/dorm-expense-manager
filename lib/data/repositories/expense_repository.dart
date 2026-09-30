@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/network_retry.dart';
 import '../models/dorm_member.dart';
 import '../models/expense.dart';
 import '../supabase_service.dart';
@@ -11,11 +12,13 @@ class ExpenseRepository {
     required String dormitoryId,
     required List<DormMember> members,
   }) async {
-    final rows = await _client
-        .from('expenses')
-        .select()
-        .eq('dormitory_id', dormitoryId)
-        .order('created_at', ascending: false);
+    final rows = await runWithRetry(
+      () => _client
+          .from('expenses')
+          .select()
+          .eq('dormitory_id', dormitoryId)
+          .order('created_at', ascending: false),
+    );
     return _toModels(rows, members);
   }
 
@@ -43,11 +46,15 @@ class ExpenseRepository {
     );
     Map<String, dynamic> row;
     try {
-      row = await _client.from('expenses').insert(payload).select().single();
+      row = await runWithRetry(
+        () => _client.from('expenses').insert(payload).select().single(),
+      );
     } on PostgrestException catch (error) {
       if (!_isMissingExpenseDate(error.message)) rethrow;
       payload.remove('expense_date');
-      row = await _client.from('expenses').insert(payload).select().single();
+      row = await runWithRetry(
+        () => _client.from('expenses').insert(payload).select().single(),
+      );
     }
     return Expense.fromMap(row);
   }
@@ -62,16 +69,22 @@ class ExpenseRepository {
     )..remove('dormitory_id')
       ..remove('creator_id');
     try {
-      await _client.from('expenses').update(payload).eq('id', expenseId);
+      await runWithRetry(
+        () => _client.from('expenses').update(payload).eq('id', expenseId),
+      );
     } on PostgrestException catch (error) {
       if (!_isMissingExpenseDate(error.message)) rethrow;
       payload.remove('expense_date');
-      await _client.from('expenses').update(payload).eq('id', expenseId);
+      await runWithRetry(
+        () => _client.from('expenses').update(payload).eq('id', expenseId),
+      );
     }
   }
 
   Future<void> delete(String expenseId) async {
-    await _client.from('expenses').delete().eq('id', expenseId);
+    await runWithRetry(
+      () => _client.from('expenses').delete().eq('id', expenseId),
+    );
   }
 
   bool _isMissingExpenseDate(String message) {

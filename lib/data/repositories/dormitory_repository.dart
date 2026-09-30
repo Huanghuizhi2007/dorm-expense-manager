@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/network_retry.dart';
 import '../models/dormitory.dart';
 import '../supabase_service.dart';
 
@@ -17,21 +18,40 @@ class DormitoryRepository {
     if (user == null) throw StateError('请先登录');
 
     final inviteCode = _generateInviteCode();
-    final row = await _client
-        .from('dormitories')
-        .insert(<String, dynamic>{
-          'name': name.trim(),
-          'creator_id': user.id,
-          'invite_code': inviteCode,
-        })
-        .select()
-        .single();
+    final row = await insertRowWithRetry<Map<String, dynamic>>(
+      findExisting: () => _client
+          .from('dormitories')
+          .select()
+          .eq('invite_code', inviteCode)
+          .maybeSingle(),
+      insert: () => _client
+          .from('dormitories')
+          .insert(<String, dynamic>{
+            'name': name.trim(),
+            'creator_id': user.id,
+            'invite_code': inviteCode,
+          })
+          .select()
+          .single(),
+    );
 
-    await _client.from('members').insert(<String, dynamic>{
-      'dormitory_id': row['id'],
-      'user_id': user.id,
-      'role': 'creator',
-    });
+    final dormitoryId = row['id'] as String;
+    await ensureRowWithRetry(
+      exists: () async {
+        final existing = await _client
+            .from('members')
+            .select('id')
+            .eq('dormitory_id', dormitoryId)
+            .eq('user_id', user.id)
+            .maybeSingle();
+        return existing != null;
+      },
+      write: () => _client.from('members').insert(<String, dynamic>{
+        'dormitory_id': dormitoryId,
+        'user_id': user.id,
+        'role': 'creator',
+      }),
+    );
 
     return Dormitory.fromMap(row);
   }
@@ -40,9 +60,11 @@ class DormitoryRepository {
     final normalized = code.trim().toUpperCase();
     if (normalized.isEmpty) throw StateError('请输入邀请码');
 
-    final result = await _client.rpc(
-      'join_dormitory',
-      params: <String, dynamic>{'p_invite_code': normalized},
+    final result = await runWithRetry(
+      () => _client.rpc(
+        'join_dormitory',
+        params: <String, dynamic>{'p_invite_code': normalized},
+      ),
     );
     if (result is List && result.isNotEmpty) {
       return Dormitory.fromMap(result.first as Map<String, dynamic>);
@@ -59,4 +81,3 @@ class DormitoryRepository {
     return buffer.toString();
   }
 }
-
